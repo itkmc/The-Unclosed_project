@@ -1,0 +1,150 @@
+/* 타임라인 스타일을 설정합니다. */
+.timeline ul {
+	background: #000000; /* 배경색 설정 */
+	padding: 50px 0; /* 패딩 설정 */
+}
+
+/* 타임라인 아이템 스타일을 설정합니다. */
+.timeline ul li {
+	list-style-type: none; /* 리스트 스타일 제거 */
+	position: relative; /* 상대 위치 설정 */
+	width: 6px; /* 너비 설정 */
+	margin: 0 auto; /* 가운데 정렬 */
+	padding-top: 50px; /* 상단 패딩 설정 */
+	background: #000000; /* 배경색 설정 */
+}
+
+/* 타임라인 아이템 마커 스타일을 설정합니다. */
+.timeline ul li::after {
+	content: ""; /* 가상 요소 생성 */
+	position: absolute; /* 절대 위치 설정 */
+	left: 50%; /* 가운데 정렬 */
+	bottom: 0; /* 하단 위치 설정 */
+	transform: translateX(-50%); /* 가로 정렬 */
+	width: 0; /* 너비 설정 */
+	height: 0; /* 높이 설정 */
+	border-left: 15px solid transparent; /* 기차 모양으로 설정 */
+	border-right: 15px solid transparent; /* 기차 모양으로 설정 */
+	border-top: 15px solid black; /* 기차 모양으로 설정 */
+	z-index: 1; /* Z축 순서 설정 */
+}
+
+/* 타임라인 아이템 내용 스타일을 설정합니다. */
+.timeline ul li div {
+	position: relative;
+	bottom: 0;
+	width: 400px;
+	padding: 15px;
+	background: #ffffff;
+	text-align: center; /* 수평 중앙 정렬을 유지합니다. */
+	display: flex; /* Flexbox 레이아웃을 적용합니다. */
+	flex-direction: column; /* 아이템을 세로로 배치합니다. */
+	justify-content: center; /* 내용을 세로 방향으로 가운데 정렬합니다. */
+}
+
+.timeline ul li div img {
+	display: block;
+	margin: auto;
+	max-width: 100%; /* 이미지가 컨테이너를 넘어서지 않도록 함 */
+	height: auto; /* 이미지 비율을 유지하면서 너비에 맞춰 조정 */
+}
+
+.solid {
+	border: 5px solid;
+}
+
+.double {
+	border: 5px double;
+}
+
+::before, ::after {
+    /* --tw-ring-color: transparent; */
+    --tw-shadow-colored: transparent;
+}
+
+title {
+	background: #000000;
+}
+
+/* 타임라인 아이템 내용 앞부분 스타일을 설정합니다. */
+.timeline ul li div::before {
+	content: ""; /* 가상 요소 생성 */
+	display: none; /*가상 요소 제거*/
+	position: absolute; /* 절대 위치 설정 */
+	bottom: 7px; /* 하단 위치 설정 */
+	width: 0; /* 너비 설정 */
+	height: 0; /* 높이 설정 */
+	border-style: solid; /* 테두리 스타일 설정 */
+}
+
+/* 타임라인 홀수 번째 아이템 내용 스타일을 설정합니다. */
+.timeline ul li:nth-child(odd) div {
+	left: 45px; /* 좌측 위치 설정 */
+}
+
+/* 타임라인 홀수 번째 아이템 내용 앞부분 스타일을 설정합니다. */
+.timeline ul li:nth-child(odd) div::before {
+	left: -15px; /* 좌측 위치 설정 */
+	border-width: 8px 16px 8px 0; /* 테두리 두께 설정 */
+	border-color: transparent #000000 transparent transparent;
+	/* 테두리 색상 설정 */
+}
+
+/* 타임라인 짝수 번째 아이템 내용 스타일을 설정합니다. */
+.timeline ul li:nth-child(even) div {
+	left: -439px; /* 좌측 위치 설정 */
+}
+
+/* 타임라인 짝수 번째 아이템 내용 앞부분 스타일을 설정합니다. */
+.timeline ul li:nth-child(even) div::before {
+	right: -15px; /* 우측 위치 설정 */
+	border-width: 8px 0 8px 16px; /* 테두리 두께 설정 */
+	border-color: transparent transparent transparent #000000;
+	/* 테두리 색상 설정 */
+}
+
+/* 시간 스타일을 설정합니다. */
+time {
+	display: block; /* 블록 요소로 설정 */
+	font-size: 1.2rem; /* 폰트 크기 설정 */
+	font-weight: bold; /* 폰트 두껍게 설정 */
+	margin-bottom: 8px; /* 하단 마진 설정 */
+}
+
+.period {
+	font-size: 2.5rem; /* 폰트 크기 설정 */
+}
+
+/* 타임라인 아이템의 효과 스타일을 설정합니다. */
+.timeline ul li::after {
+	transition: background 0.5s ease-in-out; /* 배경색 전환 효과 설정 */
+}
+
+/* 보여지는 타임라인 아이템의 효과 스타일을 설정합니다. */
+.timeline ul li.in-view::after {
+	background: #000000; /* 배경색 설정 */
+}
+
+/* 타임라인 아이템 내용의 효과 스타일을 설정합니다. */
+.timeline ul li div {
+	visibility: hidden; /* 보이지 않도록 설정 */
+	opacity: 0; /* 투명도 설정 */
+	transition: all 0.5s ease-in-out; /* 모든 속성에 대한 전환 효과 설정 */
+}
+
+/* 타임라인 홀수 번째 아이템 내용의 효과 스타일을 설정합니다. */
+.timeline ul li:nth-child(odd) div {
+	transform: translate3d(200px, 0, 0); /* 이동 효과 설정 */
+}
+
+/* 타임라인 짝수 번째 아이템 내용의 효과 스타일을 설정합니다. */
+.timeline ul li:nth-child(even) div {
+	transform: translate3d(-200px, 0, 0); /* 이동 효과 설정 */
+}
+
+/* 보여지는 타임라인 아이템 내용의 효과 스타일을 설정합니다. */
+.timeline ul li.in-view div {
+	transform: none; /* 이동 설정 초기화 */
+	visibility: visible; /* 보이도록 설정 */
+	opacity: 1; /* 불투명도 설정 */
+}

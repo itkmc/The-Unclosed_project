@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: THE_UNCLOSED
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/THE_UNCLOSED
+    username: root
+    password:
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+server:
+  port: 8081
