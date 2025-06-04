@@ -11,4 +11,9 @@ public class CaseController {
 		return "usr/case/main";
 	}
 	
+	@GetMapping("/usr/case/coldCase1")
+	public String showColdCase1() {
+		return "usr/case/coldCase1";
+	}
+	
 }
