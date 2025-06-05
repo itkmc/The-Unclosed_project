@@ -1,0 +1,51 @@
+DROP DATABASE IF EXISTS THE_UNCLOSED;
+CREATE DATABASE THE_UNCLOSED;
+USE THE_UNCLOSED;
+
+CREATE TABLE `case`(
+    id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT
+    , mainTitle VARCHAR(100) NOT NULL
+    , subTitle VARCHAR(50)
+    , occDate DATE NOT NULL
+    , occPlace VARCHAR(50) NOT NULL
+    , bodyFoundDate DATE NOT NULL
+    , foundPlace VARCHAR(50) NOT NULL
+    , victim VARCHAR(50) NOT NULL
+    , investigation TEXT NOT NULL
+);
+
+INSERT INTO `case` (
+    mainTitle
+    , occDate
+    , occPlace
+    , bodyFoundDate
+    , foundPlace
+    , victim
+    , investigation
+) VALUES ('춘천 강간살인 조작사건', '1972-09-27', '춘천시 우두동', '1972-09-29', '춘천측후소 뒤편의 논둑길', 'j양(10살)', '나체 상태로 발견되었다 \n 성폭행 당한 후 사망한 걸로 추정 또한 혈흔과 음모 발견되었다')
+         , ('', '', '', '', '', '', '')   
+
+INSERT INTO `case` (
+    mainTitle
+    , subTitle
+    , occDate
+    , occPlace
+    , bodyFoundDate
+    , foundPlace
+    , victim
+    , investigation
+) VALUES ('부산 어린이 연쇄살인 사건', '김현정 살인사건', '1975-08-20', '부산 서구 장림동', '1975-08-21', '용두산 공원 산책로 인근 숲 속에서 발견', '김현정(7살)', "사인을 경부압박에 의한 질식사로 추정함 \n 시신의 손발은 속옷으로 묶여 있었고, 복부에는 <strong style='color:red;'>범천동 이정숙이가 대신 공원에서 죽었다</strong>라는 글씨가 발견되었다")
+         , ('부산 어린이 연쇄살인 사건', '배준일 살인사건', '1975-08-24', '집 앞에서 놀다가 실종', '1975-08-25', '충무동 어시장 근처 사과상자 안에서 발견', '배준일(5살)', "김현정양이랑 비슷함 \n 복부에 <strong style='color:red;'>후하하 죽였다</strong>라는 글씨가 발견됨")
+         , ('', '', '', '', '', '', '', '')
+                         
+ INSERT INTO `case`
+    SET mainTitle = '대구 성서초등학교 학생 살인 암매장사건'
+        , subTitle = '개구리 소년 사건'
+        , occDate = '1991-03-26'
+        , occPlace = '도롱뇽알을 주우러 인근 와룡산에 올라갔다가 동반 실종'
+        , bodyFoundDate = '2002-09-26'
+        , foundPlace = '와룡산 기슭에서 실종자들의 유골이 발견'
+        , victim = '우철원(14살), 조호연(13살), 김영규(12세), 박찬인(11살), 김종식(10살)'
+        , investigation = '가정불화로 가출했거나 앵벌이로 이용되었을 것이라는 엉뚱한 수사 방향을 정함 \n 실종된 아이들은 모두 화목한 가정에서 자랐기 때문에 가출할 이유가 없다고 함 \n 초기 수사가 잘못된 방향으로 진행되어 본격적인 수사가 늦어짐';       
+
+SELECT * FROM `case`;
