@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Case {
+public class coldCase {
 	private int id;
 	private String mainTitle;
 	private String subTitle;

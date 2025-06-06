@@ -46,4 +46,34 @@ $('select[data-value]').each(function(index, el) {
 	window.addEventListener("resize", callbackFunc);
 	// 스크롤 시 함수 실행
 	window.addEventListener("scroll", callbackFunc);
+	
+	// 여기부터 고정 연도 표시 구현
+		window.addEventListener('DOMContentLoaded', () => {
+		  const fixedYear = document.getElementById('fixedYear');
+		  const periods = document.querySelectorAll('.period');
+
+		  function updateFixedYear() {
+		    let currentYear = periods[0].textContent; // 기본 초기값
+		    const offset = fixedYear.offsetHeight + 10; // 고정영역 높이 보정값
+
+		    // periods를 위에서 아래로 돌면서 화면 상단과의 상대 위치 체크
+		    for (let i = 0; i < periods.length; i++) {
+		      const rect = periods[i].getBoundingClientRect();
+		      if (rect.top <= offset) {
+		        currentYear = periods[i].textContent;
+		      } else {
+		        break;
+		      }
+		    }
+
+		    fixedYear.textContent = currentYear;
+		  }
+
+		  // 초기 호출
+		  updateFixedYear();
+
+		  // 스크롤시 계속 갱신
+		  window.addEventListener('scroll', updateFixedYear);
+		  window.addEventListener('resize', updateFixedYear);
+		});
 })();

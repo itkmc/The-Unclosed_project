@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.TheUnclosed.dao.CaseDao;
-import com.example.TheUnclosed.dto.Case;
+import com.example.TheUnclosed.dto.coldCase;
 
 @Service
 public class CaseService {
@@ -16,12 +16,7 @@ public class CaseService {
 		this.caseDao = caseDao;
 	}
 
-	public List<Case> getCases(String mainTitle) {
+	public List<coldCase> getCases(String mainTitle) {
 		return this.caseDao.getCases(mainTitle);
 	}
-
-	public Case getColdCase(int id) {
-		return this.caseDao.getColdCase(id);
-	}
-
 }

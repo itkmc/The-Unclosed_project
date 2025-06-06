@@ -1,9 +1,9 @@
 spring:
   application:
-    name: THE_UNCLOSED
+    name: THE_UNLOCK
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/THE_UNCLOSED
+    url: jdbc:mysql://localhost:3306/THE_UNLOCK
     username: root
     password:
   mvc:
