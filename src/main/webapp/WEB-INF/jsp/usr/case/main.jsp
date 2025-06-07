@@ -6,22 +6,6 @@
 
 <link rel="stylesheet" href="/resource/timeline.css" />
 
-
-<div id="fixedYear" style="
-  position: fixed;
-  top: 0; left: 0; width: 100%;
-  background: #121212;
-  color: #ff5252;
-  font-size: 2.5rem;
-  padding: 10px 20px;
-  border-bottom: 2px solid #f44336;
-  z-index: 9999;
-  font-family: 'Noto Sans KR', sans-serif;
-">
-
-1970년대
-</div>
-    
 <!-- The Timeline -->
 <section class="timeline flex justify-center">
 	<ul>

@@ -23,7 +23,7 @@
 		<div><a class="flex h-full px-3 items-center" href="/">로고</a></div>
 		<div class="grow"></div>
 		<ul class="flex">
-			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="/">HOME</a></li>
 			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../case/main">CASE</a></li>
+			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../case/coldCaseMap">CASEMAP</a></li>
 		</ul>
 	</div>

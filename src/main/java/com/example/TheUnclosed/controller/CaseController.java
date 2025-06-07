@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import com.example.TheUnclosed.dto.coldCase;
 import com.example.TheUnclosed.service.CaseService;
@@ -32,6 +33,11 @@ public class CaseController {
 		model.addAttribute("coldCases", coldCases);
 		
 		return "usr/case/coldCase";
+	}
+	
+	@GetMapping("/usr/case/coldCaseMap")
+	public String showcoldCaseMap() {
+		return "usr/case/coldCaseMap";
 	}
 	
 }
