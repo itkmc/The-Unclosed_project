@@ -12,7 +12,6 @@
 }
 </style>
 
-
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=a78659f2d020c9aaa72c30fea087ff6a"></script>
 
 <div class="text-center">

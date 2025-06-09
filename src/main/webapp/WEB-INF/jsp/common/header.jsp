@@ -25,5 +25,6 @@
 		<ul class="flex">
 			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../case/main">CASE</a></li>
 			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../case/coldCaseMap">CASEMAP</a></li>
+			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../ai/mockTrial">MOCKTRIAL</a></li>
 		</ul>
 	</div>
