@@ -1,0 +1,192 @@
+/* 기본 스타일 */
+body {
+  background-color: #f5f5f5;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 전체 레이아웃 (좌우 분할) */
+#main-container {
+  display: flex;
+  max-width: 1200px;
+  height: 80vh;
+  margin: 30px auto;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 왼쪽 발언 흐름도 */
+#flow-diagram {
+  flex: 0 0 300px;
+  background-color: #e3f2fd;
+  border-right: 1px solid #ccc;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+#flow-diagram h3 {
+  margin-top: 0;
+  color: #0d47a1;
+  margin-bottom: 15px;
+}
+
+.flow-step {
+  margin-bottom: 8px;
+  padding-left: 8px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.flow-step::before {
+  content: "▶";
+  position: absolute;
+  left: -16px;
+  color: #1976d2;
+}
+
+/* 채팅 영역 (오른쪽) */
+#chat {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #eef6ff;
+}
+
+/* 메시지 공통 */
+.message {
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  max-width: 80%;
+  word-break: break-word;
+  font-size: 15px;
+  position: relative;
+  line-height: 1.6;
+}
+
+/* 판사 */
+.judge {
+  background-color: #e8f0fe;
+  color: #1a237e;
+  font-weight: bold;
+  margin-right: auto;
+}
+
+.judge::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: -10px;
+  border-top: 10px solid transparent;
+  border-right: 10px solid #e8f0fe;
+  border-bottom: 10px solid transparent;
+}
+
+/* 검사 */
+.prosecutor {
+  background-color: #ffe0e0;
+  color: #b71c1c;
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.prosecutor::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: -10px;
+  border-top: 10px solid transparent;
+  border-left: 10px solid #ffe0e0;
+  border-bottom: 10px solid transparent;
+}
+
+/* 변호사 */
+.lawyer {
+  background-color: #e0f7fa;
+  color: #006064;
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.lawyer::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: -10px;
+  border-top: 10px solid transparent;
+  border-left: 10px solid #e0f7fa;
+  border-bottom: 10px solid transparent;
+}
+
+/* 시스템, AI, 기타 */
+.message.system {
+  background-color: #f8d7da;
+  color: #721c24;
+  margin-left: auto;
+}
+
+/* 입력 영역 */
+#input-section {
+  max-width: 1200px;
+  margin: 20px auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+#input-section select,
+#input-section input[type="text"] {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  flex: 1 1 200px;
+}
+
+#input-section button {
+  padding: 10px 16px;
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+#input-section button:hover {
+  background-color: #1565c0;
+}
+
+/* 가이드 박스 */
+#guide-box {
+  background-color: #fff8e1;
+  border-left: 5px solid #ffc107;
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 1200px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+#guide-message {
+  margin-top: 10px;
+  white-space: pre-line;
+}
+
+/* 배심원 영역, 사건 요약, 발언 흐름도 등 나중 확장용 */
+#jury-section, #case-summary {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #fefefe;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}

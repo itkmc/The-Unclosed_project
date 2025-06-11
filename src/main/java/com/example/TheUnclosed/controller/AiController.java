@@ -65,7 +65,7 @@ public class AiController {
         String userRole = requestBody.get("userRole");
         String sessionId = requestBody.get("sessionId");
         String currentPhase = requestBody.get("currentPhase");
-
+        
         String url = "http://localhost:5000/start-trial";
 
         HttpHeaders headers = new HttpHeaders();
@@ -82,7 +82,12 @@ public class AiController {
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
             String answer = (String) response.getBody().get("answer");
-
+            
+            if (answer == null || answer.trim().isEmpty()) {
+                // 초기 판사 역할 멘트 강제 설정 (필요시 더 구체화)
+                answer = "판사: 재판을 시작합니다. 검사와 변호사께서는 준비해 주시기 바랍니다.";
+            }
+            
             Map<String, String> result = new HashMap<>();
             result.put("answer", answer);
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(result);
