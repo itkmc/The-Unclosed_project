@@ -24,7 +24,7 @@ public class CaseController {
 		return "usr/case/main";
 	}
 	
-	@GetMapping("/usr/case/coldCase")
+	@PostMapping("/usr/case/coldCase")
 	public String showcoldCase(Model model, String mainTitle) {
 		
 		List<coldCase> coldCases = this.caseService.getCases(mainTitle);

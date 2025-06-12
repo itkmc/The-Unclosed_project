@@ -16,14 +16,20 @@
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=춘천 강간살인 조작사건">춘천 강간살인 조작사건</a></time>
-				<img src="/resource/caseImgs/춘천 조작.jpg" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="춘천 강간살인 조작사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">춘천 강간살인 조작사건</a></time>
+					<img src="/resource/caseImgs/춘천 조작.jpg" />
+				</form>	
 			</div>
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=부산 어린이 연쇄살인 사건">부산 어린이 연쇄살인 사건</a></time>
-				<img src="/resource/caseImgs/부산 어린이.png" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="부산 어린이 연쇄살인 사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">부산 어린이 연쇄살인 사건</a></time>
+					<img src="/resource/caseImgs/부산 어린이.png" />
+				</form>	
 			</div>
 		</li>
 		<li>
@@ -33,26 +39,38 @@
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=대구 성서초등학교 학생 살인 암매장 사건">대구 성서초등학교 <br />학생 살인 암매장 사건</a></time>
-				<img src="/resource/caseImgs/개구리소년.jpg" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="대구 성서초등학교 학생 살인 암매장 사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">대구 성서초등학교 <br />학생 살인 암매장 사건</a></time>
+					<img src="/resource/caseImgs/개구리소년.jpg" />
+				</form>	
 			</div>
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=이형호 유괴살인 사건">이형호 유괴 살인 사건</a></time>
-				<img src="/resource/caseImgs/이형호.jpg" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="이형호 유괴살인 사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">이형호 유괴 살인 사건</a></time>
+					<img src="/resource/caseImgs/이형호.jpg" />
+				</form>	
 			</div>
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=치과의사 모녀 살인 사건">치과의사 모녀 살인 사건</a></time>
-				<img src="/resource/caseImgs/치과의사 모녀.png" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="치과의사 모녀 살인 사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">치과의사 모녀 살인 사건</a></time>
+					<img src="/resource/caseImgs/치과의사 모녀.png" />
+				</form>	
 			</div>
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=사바이 단란주점 살인사건">사바이 단란주점 살인사건</a></time>
-				<img src="/resource/caseImgs/사바이 단란주점.jpg" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="사바이 단란주점 살인사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">사바이 단란주점 살인사건</a></time>
+					<img src="/resource/caseImgs/사바이 단란주점.jpg" />
+				</form>
 			</div>
 		</li>
 		<li>
@@ -62,14 +80,20 @@
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=포천 여중생 살인 사건">포천 여중생 살인 사건</a></time>
-				<img src="/resource/caseImgs/포천 여중생.jpg" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="포천 여중생 살인 사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">포천 여중생 살인 사건</a></time>
+					<img src="/resource/caseImgs/포천 여중생.jpg" />
+				</form>	
 			</div>
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=신정동 연쇄폭행 살인사건">신정동 연쇄폭행 살인사건</a></time>
-				<img src="/resource/caseImgs/신정동 사건.jpg" />
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="신정동 연쇄폭행 살인사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">신정동 연쇄폭행 살인사건</a></time>
+					<img src="/resource/caseImgs/신정동 사건.jpg" />
+				</form>	
 			</div>
 		</li>
 		<li>
@@ -79,8 +103,11 @@
 		</li>
 		<li>
 			<div class="double">
-				<time><a href="coldCase?mainTitle=목포 여대생 살인 사건">목포 여대생 살인 사건</a></time>
-				<img src="/resource/caseImgs/목포 여대생.jpg"/>
+				<form action="coldCase" method="post">
+					<input type="hidden" name="mainTitle" value="목포 여대생 살인 사건" />
+					<time><a href="#" onclick="this.closest('form').submit(); return false;">목포 여대생 살인 사건</a></time>
+					<img src="/resource/caseImgs/목포 여대생.jpg"/>
+				</form>	
 			</div>
 		</li>
 	</ul>
