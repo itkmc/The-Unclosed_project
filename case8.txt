@@ -1,0 +1,42 @@
+import json
+
+cases = [
+  {
+    "caseName": "치과의사 모녀 살인 사건",
+    "location": "서울 은평구 불광동 아파트",
+    "date": "1995-06-12",
+    "victims": [
+      {"relation": "아내", "age": 31},
+      {"relation": "딸", "age": 2}
+    ],
+    "suspect": {
+      "name": "이도행",
+      "relation": "외과의사, 피해자 남편/아버지",
+      "initialCharge": "살인 및 방화",
+      "legalProcess": [
+        {"stage": "1심", "year": 1996, "sentence": "사형 선고"},
+        {"stage": "2심", "year": 1996, "sentence": "무죄 판결"},
+        {"stage": "대법원 상고심", "year": 1998, "outcome": "파기 환송(유죄 취지)"},
+        {"stage": "파기환송 고등법원", "year": 2001, "outcome": "무죄"},
+        {"stage": "대법원 재상고심", "year": 2003, "outcome": "무죄 확정"}
+      ]
+    },
+    "crimeScene": {
+      "fireStart": "안방 장롱 내 화재",
+      "bodiesFound": "욕조 내 부인과 딸 시신",
+      "motiveDispute": "검찰은 오전 7시 이전 살해 후 화재 주장, 변호인은 출근 후 발생 주장"
+    },
+    "investigationIssues": {
+      "forensicLapses": "욕조와 시신 온도 측정 누락 등 초기 법의학 수사 부실",
+      "expertWitness": "스위스 법의학자 Krompecher 초빙, 모의 화재 실험 실시"
+    },
+    "outcome": {
+      "finalVerdict": "무죄",
+      "caseStatus": "미제 사건",
+      "socialLabel": "한국판 OJ 심슨 사건, 사형 선고 뒤 무죄 판결"
+    }
+  }
+]
+
+with open('dental_doctor_mother_child_murder.json', 'w', encoding='utf-8') as f:
+    json.dump(cases, f, ensure_ascii=False, indent=2)

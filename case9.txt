@@ -1,0 +1,73 @@
+import json
+
+cases = [
+    {
+    "caseName": "포천 여중생 살인 사건",
+    "nickname": "포천 매니큐어 살인 사건",
+    "date": "2003-11-05",
+    "location": "경기도 포천시 소흘읍 송우리",
+    "victim": {
+        "name": "엄현아",
+        "age": 14,
+        "school": "동남중학교 2학년",
+        "condition": "사망",
+        "details": "피해자의 손톱과 발톱에 붉은색 매니큐어가 칠해져 있음"
+    },
+    "missingTimeline": {
+        "4pm": "친구 4명과 놀고 있었음",
+        "6pm": "친구 집을 떠나 귀가 예정이라 어머니에게 연락, 이후 연락 두절",
+        "9pm": "어머니가 경찰에 실종 신고"
+    },
+    "distanceHomeToSchool": "약 800m, 10분 내외",
+    "foundItems": [
+        {"date": "2003-11-28", "location": "경기도 의정부시 민락동", "items": ["가방", "양말", "교복 넥타이", "장갑", "공책"], "distanceFromHome": "약 7.4km"},
+        {"date": "2003-12-22", "location": "쓰레기더미", "items": ["휴대폰", "운동화"]}
+    ],
+    "bodyFound": {
+        "date": "2004-02-08",
+        "location": "포천시 소흘읍 이동교리 배수로",
+        "condition": "나체, 상반신 심하게 훼손"
+    },
+    "investigation": {
+        "actions": [
+            "경찰 수사전담반 확대",
+            "군부대 장병 동원 실종 장소 수색"
+        ],
+        "distanceFromFoundItemsToBody": "약 2km",
+        "distanceFromHomeToBody": "약 6km"
+    },
+    "suspectClues": {
+        "damagedEvidence": ["학원수강증", "공책(이름 부분 훼손)"],
+        "postMortemSigns": "손발톱에 사후 칠해진 붉은 매니큐어",
+        "missingClothing": ["교복 넥타이", "속옷(미발견)"]
+    },
+    "psychologicalProfile": [
+        "성욕에 도취한 도착증 환자 가능성",
+        "범행 당시 기념품으로 넥타이와 속옷을 가져갔을 가능성"
+    ],
+    "caseStatus": {
+        "unsolved": True,
+        "coldCase": True,
+        "statuteOfLimitations": "폐지 (2015년)",
+        "publicAttention": True
+    },
+    "postEvent": {
+        "spiritualMarriage": "피해자 엄현아 양은 사망 2년 후 군부대 사망자 홍익선 군과 영혼결혼식 진행"
+    },
+    "media": {
+        "2019_broadcast": "3월 9일 '그것이 알고싶다' 제보 요청 방송",
+        "publicResponse": "제보 다수, 관심 환기"
+    },
+    "mugshot": {
+        "release": True,
+        "impact": [
+            "인터넷 커뮤니티에서 범인 논의 활발",
+            "몽타주와 유사한 범죄 발생, 제보자 등장",
+            "사건 해결 실마리 제공"
+        ]
+    }
+}
+]
+
+with open('pocheon_murder_case.json', 'w', encoding='utf-8') as f:
+    json.dump([cases], f, ensure_ascii=False, indent=2)

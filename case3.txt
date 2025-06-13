@@ -1,0 +1,36 @@
+import json
+
+cases = [
+  {
+    "caseName": "대구 성서초등학교 학생 살인 암매장 사건",
+    "alias": ["개구리 소년 사건"],
+    "period": {"start": "1991-03-26", "end": "2006-03-25"},
+    "location": "대구광역시 달서구 와룡산",
+    "victims": [
+      {"name": "우철원", "age": 13},
+      {"name": "조호연", "age": 12},
+      {"name": "김영규", "age": 11},
+      {"name": "박찬인", "age": 10},
+      {"name": "김종식", "age": 9}
+    ],
+    "initialInvestigation": {
+      "misassessment": "식중독 또는 약물중독·걸인으로 오분류",
+      "searchEffort": "경찰·군 35만 명 동원, 캠페인·매체 홍보"
+    },
+    "discovery": {
+      "date": "2002-09-26",
+      "place": "와룡산 세방골",
+      "causeOfDeath": "두개골 둔기 손상 등으로 타살 추정"
+    },
+    "statute": {
+      "expiration": "2006-03-25",
+      "status": "공소시효 만료, 미제 사건"
+    },
+    "ongoing": {
+      "news2023": "유족·시민 단체의 국회 진상규명 촉구 활동 현재 진행 중"
+    }
+  }
+]
+
+with open('daegu_frog_boy_case.json', 'w', encoding='utf-8') as f:
+    json.dump(cases, f, ensure_ascii=False, indent=2)

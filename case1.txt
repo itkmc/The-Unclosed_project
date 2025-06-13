@@ -1,0 +1,63 @@
+import json
+
+cases = [
+  {
+  "caseName": "춘천 강간살인 조작사건",
+  "overview": {
+    "date": "1972-09-27",
+    "location": "강원도 춘천시 우두동",
+    "characteristics": "어린이 강간살인 사건이자 조작 사건으로, 대한민국 사법계의 어두운 과오 중 하나로 평가됨"
+  },
+  "victim": {
+    "name": "J양",
+    "age": 10,
+    "birthYear": 1963,
+    "details": "집으로 돌아가던 중 만화가게에 들렀다가 실종됨. 9월 29일 나체 상태로 춘천측후소 뒤편 논둑길에서 발견, 성폭행 후 사망 추정"
+  },
+  "initialInvestigation": {
+    "summary": "경찰은 대대적 수사 진행했으나 범인 윤곽 못 잡음. 만화가게 주인 정원섭 연행됐으나 닷새 조사 후 석방"
+  },
+  "presidentialIntervention": {
+    "president": "박정희",
+    "order": "10일 안에 범인 검거 지시, 실패 시 인사조치 명령",
+    "result": "10월 10일 정원섭 체포 및 범인 지목"
+  },
+  "accused": {
+    "name": "정원섭",
+    "role": "만화가게 주인",
+    "allegation": "J양 유인해 범행 저질렀다고 알려짐",
+    "trial": {
+      "initialSentence": "무기징역(1973-03-30, 춘천지방법원)",
+      "appeals": "서울고등법원 및 대법원에서 항소 기각, 무기징역 확정",
+      "release": "1987년 12월 특별 사면으로 15년형 감형 후 석방"
+    },
+    "claims": "경찰 고문 및 짜맞추기 수사로 억울함 주장",
+    "retrial": {
+      "1999": "재심 청구했으나 기각",
+      "2008": "춘천지법에서 무죄 판결",
+      "2009": "서울고법 무죄 확정",
+      "2011": "대법원 최종 무죄 확정"
+    }
+  },
+  "truthCommission": {
+    "year": 2005,
+    "finding": "경찰 고문 수법 실제 존재 확인"
+  },
+  "compensationLawsuit": {
+    "2013": {
+      "court": "서울중앙지방법원",
+      "ruling": "국가가 정씨와 가족에게 26억 3752만원 배상 판결"
+    },
+    "2014": {
+      "court": "서울고법",
+      "ruling": "소멸시효 지나 배상 판결 뒤집힘, 정씨 배상금 수령 실패"
+    }
+  },
+  "socialImpact": {
+    "longTermEffect": "39년 만에 진실 밝혀졌으나, 억울한 낙인과 가족 고통 지속",
+    "lessons": "공권력의 부당한 조작과 인권 침해 문제 제기"
+  }
+}
+]
+with open('chuncheon_case.json', 'w', encoding='utf-8') as f:
+    json.dump(cases, f, ensure_ascii=False, indent=2)

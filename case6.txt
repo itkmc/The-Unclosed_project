@@ -1,0 +1,60 @@
+import json
+
+cases = [
+    {
+    "caseName": "신정동 연쇄폭행 살인사건",
+    "period": {"start": "2005-06-06", "end": "2006-05-31"},
+    "location": "서울특별시 양천구 신정동 일대",
+    "victims": [
+        {
+            "date": "2005-06-06",
+            "name": "권○○",
+            "age": "20대 후반",
+            "gender": "여성",
+            "status": "사망",
+            "details": {
+                "discoveryPlace": "주택가 쓰레기 무단투기장",
+                "bodyCondition": "상반신과 하반신 쌀포대에 담김",
+                "causeOfDeath": "경부압박 질식사 추정",
+                "additionalNotes": "생리대, 휴지 생식기관 삽입, 가슴에 이빨 상처"
+            }
+        },
+        {
+            "date": "2005-11-20",
+            "name": "이○○",
+            "age": "40대",
+            "gender": "여성",
+            "status": "사망",
+            "details": {
+                "discoveryPlace": "주택가 쓰레기 무단투기장",
+                "bodyCondition": "유사한 방식으로 발견",
+                "causeOfDeath": "경부압박 질식사 추정",
+                "additionalNotes": "갈비뼈 골절, 후복막강 출혈, 옷 옆구리 곰팡이 검출"
+            }
+        },
+        {
+            "date": "2006-05-31",
+            "name": "박○○",
+            "age": "20대",
+            "gender": "여성",
+            "status": "생존",
+            "details": {
+                "abductionPlace": "신정역 근처",
+                "escapePlace": "반지하방에서 탈출",
+                "rescue": "인근 초등학교에서 남자친구에게 전화 후 구조"
+            }
+        }
+    ],
+    "investigation": {
+        "methods": ["CCTV", "지문", "DNA"],
+        "result": "범인 특정 실패",
+        "suspectedEscape": "범인 타지역 도주 추정",
+        "postIncident": "유사 사건 발생 없음"
+    },
+    "relatedWorks": ["tvN 드라마 '시그널' 홍원동 사건 모티브"],
+    "status": "미제"
+}
+]
+
+with open('sinjeongdong_serial_murder_case.json', 'w', encoding='utf-8') as f:
+    json.dump([cases], f, ensure_ascii=False, indent=2)

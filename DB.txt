@@ -14,6 +14,12 @@ CREATE TABLE coldCase (
     , investigation TEXT NOT NULL
 );
 
+CREATE TABLE pdfFile (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100),  -- 예: 형법, 형사소송법
+    content LONGTEXT 
+);
+
 INSERT INTO coldCase (
     mainTitle
     , occDate
@@ -48,3 +54,4 @@ INSERT INTO coldCase (
      
 
 SELECT * FROM coldCase;
+SELECT * FROM pdfFile;

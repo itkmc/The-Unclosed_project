@@ -1,0 +1,35 @@
+import json
+
+cases = [
+  {
+    "caseName": "이형호 유괴살인 사건",
+    "period": {"start": "1991-01-29", "end": "1991-03-13"},
+    "victim": {
+      "name": "이형호",
+      "age": None,
+      "details": "1991년 1월 29일 실종, 이후 약 43~44일간 가해자의 협박 전화·메모 50회 이상"
+    },
+    "crimeDetails": {
+      "communications": {
+        "phoneCalls": "수십 차례 협박 및 요구 전화",
+        "notes": "10회 이상 메모 남김"
+      },
+      "perpetratorTraits": "치밀하게 계획, 경찰 경계"
+    },
+    "investigation": {
+      "compositeSketch": "목격자 증언 기반 몽타주 제작",
+      "evidenceUsed": ["목소리 녹음", "필적 비교", "전화·메모 기록"]
+    },
+    "outcome": {
+      "status": "미제",
+      "description": "가해자 신원 미확인, 이형호 군 사망 추정"
+    },
+    "socialSignificance": {
+      "description": "화성 연쇄살인, 개구리 소년 사건과 함께 ‘3대 미제 사건’으로 불림",
+      "modernCoverage": "최근 음성 복원·방송 재조명"
+    }
+  }
+]
+
+with open('lee_hyeongho_case.json', 'w', encoding='utf-8') as f:
+    json.dump(cases, f, ensure_ascii=False, indent=2)

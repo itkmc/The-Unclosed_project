@@ -1,0 +1,58 @@
+import json
+
+cases = [
+    {
+    "caseName": "목포 여대생 살인 사건",
+    "date": "2007-05-11",
+    "location": "전라남도 목포시",
+    "status": "미제",
+    "isColdCase": True,
+    "publicAttention": True,
+    "victims": [
+        {
+            "name": "박○○",
+            "age": 21,
+            "gender": "여성",
+            "school": "목포대학교",
+            "condition": "사망",
+            "details": {
+                "foundDate": "2007-05-11",
+                "locationFound": "목포시 인근 산속",
+                "state": "나체 상태, 외상 없음"
+            }
+        }
+    ],
+    "evidence": [
+        {
+            "type": "피해자 상태",
+            "details": "나체 상태로 발견, 외상 없음"
+        },
+        {
+            "type": "범행 수법",
+            "details": "범행 장소와 피해자의 연령대가 유사하여 연쇄살인으로 추정"
+        }
+    ],
+    "investigation": {
+        "initialResponse": "경찰은 수사 전담반을 구성하여 수사에 착수",
+        "failures": "CCTV 부재, 지문 분석 실패, 용의자 알리바이 입증",
+        "status": "공소시효 만료 (2017년 5월 11일)"
+    },
+    "prosecutor": {
+        "goal": "잔혹성 및 연쇄 범행의 계획성 강조",
+        "recommendedOpening": "피해자의 상태와 발견 장소의 유사성으로 볼 때, 이는 계획적인 연쇄살인입니다."
+    },
+    "defender": {
+        "goal": "증거 부족, 추정과 진술에 기반한 기소 비판",
+        "recommendedOpening": "직접 증거 없이 추정과 진술에만 의존한 기소는 무죄 추정 원칙을 위배합니다."
+    },
+    "judge": {
+        "focusPoints": [
+            "피해자의 상태와 발견 장소의 유사성",
+            "연쇄 범행의 가능성",
+            "증거의 직접성 여부"
+        ]
+    }
+}
+]
+with open('mokpo_female_student_murder_case.json', 'w', encoding='utf-8') as f:
+    json.dump([cases], f, ensure_ascii=False, indent=2)

@@ -1,0 +1,85 @@
+import json
+
+cases = [
+    {
+    "caseName": "사바이 단란주점 살인사건",
+    "period": {
+        "start": "1998-06-14",
+        "end": "1998-06-14"
+    },
+    "locations": [
+        "서울특별시 강남구 신사동 사바이 단란주점"
+    ],
+    "victims": [
+        {
+            "name": "정○○",
+            "age": 41,
+            "gender": "여",
+            "details": "주점 업주, 허벅지와 등에서 깊은 자상을 입고 사망"
+        },
+        {
+            "name": "박○○",
+            "age": 38,
+            "gender": "남",
+            "details": "택시기사, 몸에 17군데 자상을 입고 사망"
+        },
+        {
+            "name": "유○○",
+            "age": 41,
+            "gender": "여",
+            "details": "목이 반쯤 절단되었으며 이마에 신발 자국이 남은 채 사망"
+        },
+        {
+            "name": "박○○",
+            "age": 43,
+            "gender": "여",
+            "details": "유일한 생존자, 목 부위 중상을 입음"
+        }
+    ],
+    "initialInvestigation": {
+        "discovery": "부상당한 박 씨가 피를 흘리며 계단을 올라오다 택시기사 한 씨에 의해 발견, 신고",
+        "response": "경찰이 현장에 즉시 출동"
+    },
+    "sceneDetails": {
+        "atmosphere": "역한 피비린내, 기물 파손 및 피가 흥건한 바닥",
+        "evidenceManipulation": [
+            "범인들이 주방 수도꼭지를 틀어 바닥을 적심",
+            "유리컵과 접시를 부숴 바닥에 흩뿌림"
+        ],
+        "fingerprints": {
+            "count": 39,
+            "usable": False
+        },
+        "cctv": False
+    },
+    "witnessTestimony": {
+        "survivor": {
+            "name": "박○○",
+            "status": "목 부위 심각한 부상, 말하기 어려움",
+            "testimony": "유 씨와 함께 들어갔고, 방 안에서 불안한 기운을 느껴 나옴. 범인들이 업주와 택시기사를 결박하고 금품 요구하는 모습 목격"
+        }
+    },
+    "motiveAndQuestions": {
+        "motive": "금품 목적",
+        "questions": [
+            "귀중품을 남긴 점",
+            "불필요한 시신 훼손 및 과도한 잔인성"
+        ]
+    },
+    "policeActions": {
+        "suspects": "용의자 검거 시도, 알리바이 입증되어 석방",
+        "confidence": "경찰은 조기 검거를 기대했음"
+    },
+    "caseStatus": {
+        "unsolved": True,
+        "statuteOfLimitationsExpired": "2013-06-14"
+    },
+    "aftermath": {
+        "policeEfforts": "참여 경찰들이 개인적으로 수사를 이어감",
+        "impact": "사건은 범죄사에서 중요한 사례로 남음, 경찰 순직 발생"
+    }
+}
+]
+
+with open('sabai_murder_case.json', 'w', encoding='utf-8') as f:
+    json.dump(cases, f, ensure_ascii=False, indent=2)

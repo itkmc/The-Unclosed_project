@@ -182,14 +182,14 @@ $(document).ready(function() {
 		<option value="춘천 강간살인 조작사건">춘천 강간살인 조작사건</option>
 		<option value="부산 어린이 연쇄살인 사건">부산 어린이 연쇄살인 사건</option>
 		<option value="대구 성서초등학교 학생 살인 암매장 사건">대구 성서초등학교 학생 살인 암매장 사건</option>
-		<option value="이형호 유괴 살인 사건" selected>이형호 유괴 살인 사건</option>
+		<option value="이형호 유괴살인 사건" selected>이형호 유괴 살인 사건</option>
 		<option value="치과의사 모녀 살인 사건">치과의사 모녀 살인 사건</option>
 		<option value="사바이 단란주점 살인사건">사바이 단란주점 살인사건</option>
 		<option value="포천 여중생 살인 사건">포천 여중생 살인 사건</option>
 		<option value="신정동 연쇄폭행 살인사건">신정동 연쇄폭행 살인사건</option>
 		<option value="목포 여대생 살인 사건">목포 여대생 살인 사건</option>
 	</select>
-
+	
 	<select id="role" title="역할 선택">
 		<option value="판사" selected>판사</option>
 		<option value="검사">검사</option>

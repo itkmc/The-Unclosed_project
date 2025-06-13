@@ -1,0 +1,88 @@
+import json
+
+cases = [
+  {
+    "caseName": "부산 어린이 연쇄살인 사건",
+    "period": {
+      "start": "1975-08-20",
+      "end": "1975-08-24"
+    },
+    "locations": [
+      "부산직할시 서구 장림동",
+      "부산직할시 동구 좌천동"
+    ],
+    "victims": [
+      {
+        "name": "김현정",
+        "age": 7,
+        "gender": "여",
+        "date": "1975-08-20",
+        "details": "핫도그 사먹으러 간 후 실종, 다음날 용두산공원 인근 숲속에서 교살된 시신(경부압박), 몸에 '범천동 이정숙이가 대신공원에서 죽었다' 낙서"
+      },
+      {
+        "name": "배준일",
+        "age": 5,
+        "gender": "남",
+        "date": "1975-08-24",
+        "details": "저녁 7시 실종, 다음날 새벽 충무동 어시장 인근서 교살된 시신, 몸에 '후하하 죽였다' 낙서"
+      }
+    ],
+    "initialInvestigation": {
+      "misassessment": "경찰은 식중독 또는 약물중독으로 사망 추정하고 '걸인'으로 오분류",
+      "shift": "가족 항의 후 유괴·살인 수사로 전환"
+    },
+    "perpetratorSign": {
+      "messages": [
+        "범천동 이정숙이가 대신공원에서 죽었다",
+        "후하하 죽였다"
+      ],
+      "calls": {
+        "date": "1975-08-23",
+        "message": "수사 좀 잘해라; 자기 범인",
+        "code": "7698",
+        "meaning": "이정숙 양 집 뒷자리 전화번호"
+      }
+    },
+    "witness": {
+      "taxiDriver": {
+        "time": "1975-08-24 22:00",
+        "description": {
+          "genderAge": "20~30대 남성",
+          "height": "약 170cm",
+          "features": "양 뺨 점, 오른쪽 입가 점, 머리 짧음",
+          "clothes": "베이지색 남방, 줄무늬 바지, 슬리퍼형 구두"
+        }
+      }
+    },
+    "policeResponse": {
+      "montage": "10만 장 배포",
+      "reward": "100만원 현상금",
+      "classification": "변태성욕자 또는 정신이상자"
+    },
+    "similarCases": [
+      {
+        "date": "1975-11-30",
+        "victims": ["이영주(8세 여)", "이경진(13세 남)"],
+        "perpetrator": "박홍근(전과 3범, 정신병자)",
+        "relation": "별개 사건"
+      }
+    ],
+    "expertAnalysis": [
+      {
+        "name": "오석환 박사",
+        "conclusion": "범행의 치밀성과 유아 대상 선택으로 정신이상자·성도착증자"
+      },
+      {
+        "name": "표창원",
+        "conclusion": "20~30대 남성, 전과자 추정"
+      }
+    ],
+    "caseStatus": {
+      "unsolved": True,
+      "statuteOfLimitationsExpired": "1990-08-24"
+    }
+  }
+]
+
+with open('busan_children_serial_murder.json', 'w', encoding='utf-8') as f:
+    json.dump(cases, f, ensure_ascii=False, indent=2)
