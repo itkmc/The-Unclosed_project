@@ -2,32 +2,80 @@ import os
 import importlib.util
 import json
 from flask import Flask, request, jsonify
-from google.generativeai import GenerativeModel
 import google.generativeai as genai
 from google.genai.types import Content, Part
-from extract_text_from_pdf import LAW_KNOWLEDGE
 from flask import current_app as app
 import traceback
+from flask import request
+import pymysql
+from pymysql.cursors import DictCursor
 
 # Google GenAI 클라이언트 초기화 (Gemini API 사용)
-client = genai.configure(api_key="AIzaSyCgov8AsBzeI5VgOqT1jM-f7WfrsS1lg7g")
+client = genai.configure(api_key="genai_app_key")
 
 # 전역 client 객체
 model = None
-client = None
+conversations = {}
 
-def ensure_client():
+def ensure_model():
     global model, client
-    if client is None:
-        try:
-            model = genai.GenerativeModel("gemini-1.5-pro")
-            client = model.start_chat(history=[])
-        except Exception as e:
-            print("Gemini client 초기화 실패:", e)
-            client = None
+    try:
+        if model is None:
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+        if client is None:
+            client = model.start_chat()
+    except Exception as e:
+        print("Gemini 모델 초기화 실패:", e)
+        model = None
+        client = None
 
 # Flask 앱 생성
 app = Flask(__name__)
+
+# ✅ 딕셔너리로 설정만 저장해놓기 (Connection 아님!)
+DB_CONFIG = {
+    'host': '127.0.0.1',
+    'user': 'root',
+    'password': '',
+    'database': 'THE_UNLOCK',
+    'charset': 'utf8mb4',
+    'cursorclass': DictCursor
+}
+
+LAW_KNOWLEDGE = {}
+
+def load_law_knowledge():
+    global LAW_KNOWLEDGE
+    try:
+        # ✅ 딕셔너리를 언패킹해서 실제 연결!
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            sql = "SELECT title, content FROM pdfFile WHERE title IN (%s, %s)"
+            cursor.execute(sql, ('형법', '형사소송법'))
+            rows = cursor.fetchall()
+            for row in rows:
+                LAW_KNOWLEDGE[row['title']] = row['content']
+        conn.close()
+        print("법률 지식 로드 완료")
+    except Exception as e:
+        print("법률 지식 로드 실패:", e)
+
+load_law_knowledge()
+
+def find_related_laws(case_facts, law_knowledge):
+    """
+    사건 개요(case_facts)에 포함된 단어들과 법조문 내용을 비교하여
+    관련이 있는 조문 키를 리스트로 반환한다.
+    아주 단순히 법조문 내용 중 한두 단어라도 포함돼 있으면 관련 있다고 판단.
+    """
+    related_laws = []
+    for law_title, law_text in law_knowledge.items():
+        # 법조문 문장 단어로 나누기 (간단히 띄어쓰기 기준)
+        words = law_text.split()
+        # 사건 개요에 법조문 단어 중 일부라도 포함되어 있으면 관련 조문으로 간주
+        if any(word in case_facts for word in words):
+            related_laws.append(law_title)
+    return related_laws
 
 # 세션별 대화 저장소
 conversations = {}
@@ -41,27 +89,31 @@ PHASE_SPEAK_ORDER = {
     "평결": ["판사"]
 }
 
-# 사건 정보를 저장할 전역 딕셔너리
-CASE_DATABASE = {}
-
 # /data 폴더에 있는 사건 정보를 담은 .py 파일들을 동적으로 불러옴
-def load_cases_from_py():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(BASE_DIR, 'data')
-
+def load_case_database():
+    CASE_DATABASE = {}
+    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    
     for filename in os.listdir(data_dir):
-        if filename.endswith('.py'):
-            file_path = os.path.join(data_dir, filename)
-            module_name = filename[:-3]  # .py 제거
-            spec = importlib.util.spec_from_file_location(module_name, file_path)
+        if filename.endswith(".py"):
+            filepath = os.path.join(data_dir, filename)
+            spec = importlib.util.spec_from_file_location("module.name", filepath)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            cases = getattr(module, 'cases', None)
-            if cases:
-                for case in cases:
-                    case_name = case.get('caseName')
+
+            if hasattr(module, "cases"):
+                for case in module.cases:
+                    case_name = case.get("caseName")
                     if case_name:
                         CASE_DATABASE[case_name] = case
+            else:
+                print(f"[경고] {filename} 에 'cases' 변수 없음")
+
+    print("현재 로드된 사건 목록:", list(CASE_DATABASE.keys()))
+    return CASE_DATABASE
+
+# 사건 정보를 저장할 전역 딕셔너리
+CASE_DATABASE = load_case_database()
 
 # 역할과 재판 단계에 따른 프롬프트 생성
 def build_prompt_for_role(role, phase, case_info):
@@ -111,8 +163,8 @@ AI는 반드시 발언 순서에 따라 {ai_roles} 역할만 수행해야 해.
     return base_prompt.strip()
 
 # 사용자 역할에 맞는 질문 예시 3개 생성 (검사 또는 변호사용)
-def generate_guide_questions(case_facts, user_role):
-    ensure_client()
+def generate_guide_questions(case_facts, user_role, current_phase):
+    ensure_model()
     if client is None:
         return "예시 질문 생성 실패 (Gemini 클라이언트 초기화 실패)"
 
@@ -120,6 +172,7 @@ def generate_guide_questions(case_facts, user_role):
 너는 모의재판 시뮬레이션에서 '{user_role}' 역할을 맡은 사용자에게 도움말을 제공해야 해.
 다음 사건 정보 또는 법률 내용을 기반으로, '{user_role}'가 질문할 수 있는 구체적이고 사실 기반의 예시 질문 3가지를 만들어줘.
 형법, 형사소송법 관련 사건이면 조문, 판례, 고의성, 책임 조각 사유 등을 반영해줘.
+현재 발언 단계는 '{current_phase}'야. 이 단계에 맞는 질문을 만들어줘.
 
 사건 정보:
 {case_facts}
@@ -137,18 +190,72 @@ def generate_guide_questions(case_facts, user_role):
         print("도움말 질문 생성 오류:", e)
         return "예시 질문 생성 실패 (AI 오류 발생)"
 
+def generate_judge_opening(case_name, case_facts):
+    ensure_model()
+    
+    prompt = f"""
+    너는 법정 모의재판의 판사 역할을 맡았어.
+    사건명은 '{case_name}'이고, 아래 사건 정보를 참고하여 재판 개시 및 절차 안내 발언문을 작성해줘.
+    - 간결하고 공식적인 말투로 작성할 것.
+    - 검사와 변호인이 각각 입장을 진술하도록 차례를 안내할 것.
+
+    사건 정보:
+    {case_facts}
+
+    판사 발언 예시:
+    """
+    try:
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        if not text.startswith("판사:"):
+            text = "판사: " + text
+        return text
+    except Exception as e:
+        print("판사 발언 생성 오류:", e)
+        # 실패 시 간단한 기본문 반환
+        def generate_judge_opening(case_name):
+            return f"""판사: ## 법정 모의재판 개시 및 절차 안내
+**사건명: {case_name}**
+**재판장: ** (땅, 땅, 땅)
+**재판장: ** 지금부터 {case_name}에 대한 재판을 시작하겠습니다.
+**재판장: ** 검사 측은 사건 개요 및 공소 사실에 대한 진술을 시작해주시기 바랍니다."""
+
+
 # 검사 또는 변호사 역할의 서론 발언문 생성
 def generate_opening_statement(case_facts, user_role):
+    global LAW_KNOWLEDGE
+    ensure_model()
+
+    # 판사 발언문도 추가
+    if user_role == "판사":
+        prompt = f"""
+너는 '판사' 역할로 재판 개시를 알리고 재판 절차를 안내하는 간결한 발언문을 작성해야 해.
+- 공손하고 공식적인 말투로 3~4문장 정도 작성해줘.
+
+사건 정보:
+{case_facts}
+""".strip()
+        try:
+            response = model.generate_content(prompt)
+            return f"{user_role}: {response.text.strip()}"
+        except Exception as e:
+            print("판사 발언문 생성 오류:", e)
+            return f"{user_role}: (발언문 생성 실패)"
+
+    # 검사/변호사 역할
     if user_role not in ["검사", "변호사"]:
         return ""
-    
-    # 형법/형사소송법 예외 처리
-    if case_facts in LAW_KNOWLEDGE:
+
+    related_laws = find_related_laws(case_facts, LAW_KNOWLEDGE)
+
+    # 관련 법률 있을 경우 미리 정해둔 멘트 반환
+    if related_laws:
         if user_role == "검사":
             return "검사: 피고인의 행위는 형법상 명백히 위법하며, 고의성이 입증된다고 판단됩니다."
         elif user_role == "변호사":
             return "변호사: 피고인의 행위는 정당방위 또는 과잉방위에 해당하여 책임을 묻기 어렵습니다."
 
+    # AI 생성 프롬프트 구성
     statement_type = "공소사실 진술" if user_role == "검사" else "변론 요지 진술"
     prompt = f"""
 너는 '{user_role}' 역할로 '{statement_type}'을 작성해야 해.
@@ -159,17 +266,11 @@ def generate_opening_statement(case_facts, user_role):
 
 사건 정보:
 {case_facts}
-
-답변 형식 예시:
-{user_role}: ...
 """.strip()
 
     try:
-        response = client.chat(
-            model="gemini-1.5-pro",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content.strip()
+        response = model.generate_content(prompt)
+        return f"{user_role}: {response.text.strip()}"
     except Exception as e:
         print("발언문 생성 오류:", e)
         return f"{user_role}: (발언문 생성 실패)"
@@ -190,32 +291,52 @@ def generate_response(session_id, user_input):
         )
         conversations[session_id].insert(0, Content(role="system", parts=[Part(text=system_prompt)]))
 
-    response = genai.chats(model="gemini-1.5-pro", messages=conversations[session_id])
-    reply_text = response.last.text
+    try:
+        response = genai.chat(
+            model="gemini-2.0-flash-lite",
+            messages=conversations[session_id]
+        )
+        reply_text = response.last.text
 
-    conversations[session_id].append(Content(role="model", parts=[Part(text=reply_text)]))
-
-    return reply_text
+        # 응답 저장
+        conversations[session_id].append(Content(role="model", parts=[Part(text=reply_text)]))
+        return reply_text
+    except Exception as e:
+        print("AI 응답 생성 실패:", e)
+        return "(AI 응답 생성 실패)"
 
 # 역할-단계별 예시 생성 (예: 검사의 증인신문 예시)
 def generate_role_phase_example(case_name, role, phase):
+    # 1) 사건 정보 가져오기
     if case_name in LAW_KNOWLEDGE:
         case_facts = LAW_KNOWLEDGE[case_name]
     else:
         case = CASE_DATABASE.get(case_name)
         if not case:
             return f"'{case_name}' 사건 정보를 찾을 수 없습니다."
-        case_facts = json.dumps(case, ensure_ascii=False, indent=2)
+        case_facts = case  # JSON 문자열이 아니라 dict 그대로 전달
 
-    prompt = build_prompt_for_role(role, phase, case_facts)
+    # 2) build_prompt_for_role 내부에서 문자열화 하도록 변경하거나
+    #    문자열이 필요하면 여기서 변환해도 됨
+    if isinstance(case_facts, dict):
+        # 문자열로 변환이 필요하면 여기서
+        case_facts_str = json.dumps(case_facts, ensure_ascii=False, indent=2)
+    else:
+        case_facts_str = str(case_facts)
+
+    prompt = build_prompt_for_role(role, phase, case_facts_str)
+
+    # 3) AI 호출
     try:
         response = client.generate_content(
-            model="gemini-1.5-pro",
+            model="gemini-2.0-flash-lite",
             contents=[Content(role="user", parts=[Part(text=prompt)])]
         )
         return response.text.strip()
     except Exception as e:
         print("역할-단계별 예시 생성 오류:", e)
+        import traceback
+        traceback.print_exc()
         return "역할-단계별 예시 생성 실패 (AI 오류)"
 
 def detect_phase_end(message):
@@ -234,54 +355,65 @@ def get_next_phase(current_phase):
         return None
 
 # 재판 세션 시작 및 초기 프롬프트, 예시 제공
-@app.route('/start-trial', methods=['POST'])
+@app.route("/start-trial", methods=["POST"])
 def start_trial():
-    data = request.json
-    session_id = data.get("session_id")
-    user_role = data.get("role")
+    data = request.get_json()
+    session_id = data.get("sessionId")
     case_name = data.get("caseName")
-    current_phase = data.get("phase", "서론")
+    role = data.get("role")
+    current_phase = data.get("currentPhase", "서론")  # 🔧 기본값 지정
 
-    # 사건 정보 가져오기
-    case = CASE_DATABASE.get(case_name)
-    if not case:
-        return jsonify({"error": f"사건 '{case_name}'을 찾을 수 없습니다."}), 404
+    try:
+        ensure_model()
 
-    case_facts = json.dumps(case, ensure_ascii=False, indent=2)
+        case_data = CASE_DATABASE.get(case_name)
+        if not case_data:
+            return jsonify({"error": "해당 사건 정보를 찾을 수 없습니다."}), 400
 
-    # 발언 순서
-    speak_order = PHASE_SPEAK_ORDER.get(current_phase, ["판사", "검사", "변호사"])
+        case_facts = case_data.get("facts", "")
 
-    # 초기 system prompt 생성
-    initial_prompt = build_initial_prompt(case_name, current_phase, speak_order, user_role, case_facts)
+        # 1. 판사 발언
+        judge_opening = generate_judge_opening(case_name, case_facts)
 
-    conversations[session_id] = [Content(role="system", parts=[Part(text=initial_prompt)])]
+        # 2. 상대 역할 지정
+        ai_role = "변호사" if role == "검사" else "검사"
 
-    # 발언 예시 + 질문 예시
-    opening = generate_opening_statement(case_facts, user_role)
-    guide_questions = generate_guide_questions(case_facts, user_role)
+        # 3. 상대 역할의 발언 생성
+        opponent_opening = generate_opening_statement(case_facts, ai_role)
 
-    return jsonify({
-        "message": "재판 세션이 시작되었습니다.",
-        "system_prompt": initial_prompt,
-        "opening_statement": opening,
-        "guide_questions": guide_questions
-    })
+        # 4. 사용자 가이드 메시지 생성 (수정됨!)
+        guide_message = generate_guide_questions(case_name, role, current_phase)
+
+        # 5. 전체 응답 구성
+        if role == "검사":
+            answer = f"{judge_opening}"  # 검사 차례니까 판사 발언까지만
+        elif role == "변호사":
+            answer = f"{judge_opening}\n{opponent_opening}"  # 변호사 차례면 검사 발언까지 출력
+
+        return jsonify({
+            "answer": answer,
+            "guideMessage": guide_message
+        })
+
+    except Exception as e:
+        print("❌ [start-trial 예외 발생]", e)
+        return jsonify({"error": "서버 내부 오류 발생"}), 500
 
 @app.route('/ask-ai', methods=['POST'])
 def ask_ai():
     try:
+        print("📌 [1] 요청 수신됨")
         data = request.get_json()
+        print("📌 [2] 요청 데이터:", data)
+
         session_id = data.get('sessionId')
         user_input = data.get('message')
         user_role = data.get('role')
         case_name = data.get('caseName')
 
-        # 필수 값 확인
         if not all([session_id, user_input, user_role, case_name]):
             return jsonify({'error': '필수 파라미터 누락'}), 400
 
-        # 사건 정보 확인
         case_data = CASE_DATABASE.get(case_name)
         if not case_data:
             return jsonify({'error': f"해당 사건 '{case_name}' 정보가 없습니다."}), 404
@@ -290,39 +422,46 @@ def ask_ai():
         if not case_facts:
             return jsonify({'error': f"'{case_name}'의 사건 요약 정보가 없습니다."}), 500
 
-        # 대화 상태 초기화
+        # 세션 초기화
         if session_id not in conversations:
-            conversations[session_id] = []
+            conversations[session_id] = {
+                "caseName": case_name,
+                "role": user_role,
+                "phase": "서론",
+                "history": []
+            }
 
-        # 사용자 발언 저장
-        conversations[session_id].append({
+        # 대화 기록에 사용자 발언 추가
+        conversations[session_id]["history"].append({
             "role": user_role,
             "content": user_input
         })
 
-        # 프롬프트 구성
-        history = conversations[session_id]
-        messages = [{"role": "user" if m["role"] == user_role else "assistant", "content": m["content"]} for m in history]
+        history = conversations[session_id]["history"]
+        messages = [
+            {"role": "user" if m["role"] == user_role else "model", "parts": [m["content"]]}
+            for m in history
+        ]
 
-        ensure_client()
-        if client is None:
-            return jsonify({'error': 'Gemini 클라이언트 초기화 실패'}), 500
+        ensure_model()
 
-        response = client.chat(
-            model="gemini-1.5-pro",
-            messages=messages
-        )
+        if model is None:
+            return jsonify({'error': 'Gemini 모델 초기화 실패'}), 500
+
+        chat = model.start_chat()
+        response = chat.send_message(messages)
 
         ai_reply = response.text.strip()
-        conversations[session_id].append({
+
+        conversations[session_id]["history"].append({
             "role": "AI",
             "content": ai_reply
         })
-        print(jsonify({'response': ai_reply})) 
+
         return jsonify({'response': ai_reply})
-   
+
     except Exception as e:
-        print("AI 응답 오류:", e)
+        print("❌ [예외 발생] AI 응답 오류:", e)
         traceback.print_exc()
         return jsonify({'error': 'AI 응답 생성 실패'}), 500
     
@@ -345,16 +484,7 @@ def get_role_phase_example():
         "example": example_text
     })
 
-# 현재 로딩된 사건 목록 출력 (디버깅용)
-@app.route('/list-cases', methods=['GET'])
-def list_cases():
-    case_names = list(CASE_DATABASE.keys())
-    return jsonify({
-        "count": len(case_names),
-        "cases": case_names
-    })
-
 # 서버 실행
 if __name__ == '__main__':
-    load_cases_from_py()  # 서버 시작 시 사건 정보 로딩
+    load_case_database()
     app.run(debug=True)

@@ -74,6 +74,18 @@ body {
   word-break: break-word;
 }
 
+.message.left {
+  text-align: left;
+  background-color: #2a2a2a;
+  margin-right: auto;
+}
+
+.message.right {
+  text-align: right;
+  background-color: #444;
+  margin-left: auto;
+}
+
 /* 판사 */
 .judge {
   border-left: 6px solid #42a5f5;
@@ -142,199 +154,6 @@ body {
   background: rgba(255, 255, 255, 0.06);
   border-left: 5px solid #fff59d;
   color: #fff9c4;
-  border-radius: 8px;
-  font-style: italic;
-}
-
-/* 타임스탬프 및 삭제 버튼 */
-.message .timestamp {
-  display: block;
-  font-size: 0.75em;
-  text-align: right;
-  margin-top: 8px;
-  color: #aaa;
-}
-
-.message .delete-btn {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  color: #bbb;
-  font-size: 14px;
-  cursor: pointer;
-  display: none;
-}
-
-.message:hover .delete-btn {
-  display: inline;
-}
-
-/* 애니메이션 */
-@keyframes slideIn {
-  from {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Roboto&display=swap');
-
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  font-family: 'Roboto', sans-serif;
-  color: #f5f5f5;
-  overflow-x: hidden;
-}
-
-/* 메인 컨테이너 */
-#main-container {
-  max-width: 1300px;
-  margin: 40px auto;
-  display: flex;
-  border-radius: 20px;
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-}
-
-/* 흐름도 */
-#flow-diagram {
-  flex: 0 0 300px;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.03);
-  border-right: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-#flow-diagram h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
-  color: #ffdd57;
-  margin-bottom: 20px;
-}
-
-.flow-step {
-  margin-bottom: 16px;
-  position: relative;
-  padding-left: 20px;
-  color: #ddd;
-  font-size: 15px;
-}
-
-.flow-step::before {
-  content: "⚖️";
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-/* 채팅 영역 */
-#chat {
-  flex: 1;
-  padding: 30px;
-  background-color: rgba(0, 0, 0, 0.3);
-  overflow-y: auto;
-}
-
-/* 공통 메시지 스타일 */
-.message {
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  font-size: 15px;
-  line-height: 1.6;
-  position: relative;
-  animation: slideIn 0.3s ease-out;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.08);
-  max-width: 75%;
-  word-break: break-word;
-}
-
-/* 판사 */
-.judge {
-  border-left: 6px solid #42a5f5;
-  color: #e3f2fd;
-  background-color: rgba(33, 150, 243, 0.1);
-  margin-right: auto;
-}
-
-/* 검사 */
-.prosecutor {
-  border-right: 6px solid #ef5350;
-  color: #ffcdd2;
-  background-color: rgba(239, 83, 80, 0.1);
-  margin-left: auto;
-}
-
-/* 변호사 */
-.lawyer {
-  border-right: 6px solid #66bb6a;
-  color: #c8e6c9;
-  background-color: rgba(102, 187, 106, 0.1);
-  margin-left: auto;
-}
-
-/* 시스템 메시지 */
-.message.system {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-left: 4px solid #ffca28;
-  color: #ffe082;
-  font-style: italic;
-}
-
-/* 입력 영역 */
-#input-section {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 20px 30px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  border-top: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-#input-section select,
-#input-section input[type="text"] {
-  padding: 12px 16px;
-  border-radius: 6px;
-  border: none;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font-size: 14px;
-  flex: 1;
-}
-
-#input-section button {
-  padding: 12px 20px;
-  background-color: #ffd54f;
-  color: #000;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-#input-section button:hover {
-  background-color: #ffca28;
-}
-
-/* 가이드 박스 */
-#guide-box {
-  margin: 30px auto;
-  max-width: 1300px;
-  padding: 20px 30px;
-  background: rgba(255, 255, 255, 0.06);
-  border-left: 5px solid #fff59d;
-  color: #000000;
   border-radius: 8px;
   font-style: italic;
 }

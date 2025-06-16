@@ -54,7 +54,7 @@ $(document).ready(function() {
                 data: JSON.stringify({
                     sessionId: sessionId,
                     caseName: caseName,
-                    userRole: role,
+                    role: role,
                     currentPhase: '서론' // 초기 단계는 서론으로 설정
                 }),
                 success: function(data) {
@@ -109,43 +109,41 @@ $(document).ready(function() {
 
     // /ask-ai 호출 함수
     function sendAskAi(caseName, role, question) {
-        $.ajax({
-            url: '/usr/ai/ask',
-            type: 'POST',
-            contentType: 'application/json',
-            dataType: 'json',
+    	$.ajax({
+            type: "POST",
+            url: "/usr/ai/ask",
+            contentType: "application/json",
             data: JSON.stringify({
-                sessionId: sessionId,
-                question: question,
-                caseName: caseName,
-                role: role
+                sessionId,
+                caseName,
+                role,
+                question
             }),
-            success: function(data) {
-                if (!data.answer) {
-                    addMessage('시스템', 'AI 응답이 없습니다.', false);
-                    return;
-                }
+            success: function(response) {
+                const userMessage = question;
+                const aiMessage = response.answer;
 
-                const lines = data.answer.split('\n').filter(line => line.trim() !== '');
+                // 사용자 질문은 항상 오른쪽
+                addMessage(role, userMessage, "right");
 
-                lines.forEach(line => {
-                    const idx = line.indexOf(':');
-                    if (idx !== -1) {
-                        const aiRole = line.substring(0, idx).trim();
-                        const aiText = line.substring(idx + 1).trim();
-                        addMessage(aiRole, aiText, false);
+                // AI 응답은 "판사:", "검사:", "변호사:" 등의 발화자 구분해서 왼쪽 출력
+                const lines = aiMessage.split("\n");
+                for (const line of lines) {
+                    if (line.trim() === "") continue;
+
+                    const speakerMatch = line.match(/^(\w+):\s*/); // 판사: or 검사:
+                    if (speakerMatch) {
+                        const speaker = speakerMatch[1];
+                        const content = line.replace(/^(\w+):\s*/, "");
+                        addMessage(speaker, content, "left");
                     } else {
-                        const fallbackText = line.trim();
-                        if (fallbackText) {
-                            addMessage('AI', fallbackText, false);
-                        }
+                        // 시스템 메시지 등도 왼쪽 출력
+                        addMessage("시스템", line.trim(), "left");
                     }
-                });
-
-                $('#question').val('');
+                }
             },
-            error: function(err) {
-                addMessage('시스템', '오류가 발생했습니다. 다시 시도해주세요.', false);
+            error: function() {
+                addMessage("시스템", "❌ 시스템 오류가 발생했습니다. 다시 시도해주세요.", "left");
             }
         });
     }
