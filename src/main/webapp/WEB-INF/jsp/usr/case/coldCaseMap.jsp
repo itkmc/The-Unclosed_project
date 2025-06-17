@@ -18,6 +18,7 @@
 	<h2>COLD CASE MAP</h2>
 	<p>대한민국 미제사건 정보</p>
 </div>
+
 <div id="map"></div>
 
 <!-- 2. 모듈 스크립트 안에 caseData import & 지도 코드 -->
@@ -73,13 +74,25 @@ allData.forEach((item, index) => {
             map: map
         });
 
-        // 오버레이 컨텐츠용 빈 div (고유 id 부여)
-        const overlayId = `customOverlay-${index}`;
-        const overlayContent = `<div id="${overlayId}" class="customOverlay"></div>`;
+        // 오버레이 HTML 전체 문자열로 구성
+        const overlayHTML = `
+            <div class="customOverlay" style="
+                position: relative; bottom: 40px; border-radius:6px; border:1px solid #ccc;
+                background:#fff; padding:10px; width:250px; box-shadow:0 2px 6px rgba(0,0,0,0.3);
+            ">
+                <div style="font-weight:bold; margin-bottom:5px;">\${item.title}</div>
+                <img src="\${item.img}" style="width:250px; height:150px; margin-bottom:8px;">
+                <a href="\${item.link}" target="_blank" style="color:blue; text-decoration:underline;">자세히 보기</a>
+                <button class="closeBtn" style="
+                    position:absolute; top:5px; right:5px; border:none; background:#f00;
+                    color:#fff; border-radius:50%; width:20px; height:20px; cursor:pointer;
+                ">×</button>
+            </div>
+        `;
 
         const customOverlay = new kakao.maps.CustomOverlay({
             position: position,
-            content: overlayContent,
+            content: overlayHTML,
             yAnchor: 1,
             map: null
         });
@@ -89,36 +102,21 @@ allData.forEach((item, index) => {
             // 기존 오버레이 닫기
             if (activeOverlay) {
                 activeOverlay.setMap(null);
-                $('.customOverlay').empty();
+                activeOverlay = null;
             }
 
             // 현재 오버레이 열기
             customOverlay.setMap(map);
             activeOverlay = customOverlay;
 
-            // jQuery로 overlay 내용 넣기
-            $(`#${overlayId}`).html(`
-                <div style="
-                    position: relative; bottom: 40px; border-radius:6px; border:1px solid #ccc;
-                    background:#fff; padding:10px; width:250px; box-shadow:0 2px 6px rgba(0,0,0,0.3);
-                ">
-                    <div style="font-weight:bold; margin-bottom:5px;">${item.title}</div>
-                    <img src="${item.imageUrl || 'https://via.placeholder.com/200x100'}" style="width:100%; height:auto; margin-bottom:8px;">
-                    <a href="${item.link}" target="_blank" style="color:blue; text-decoration:underline;">자세히 보기</a>
-                    <button class="closeBtn" style="
-                        position:absolute; top:5px; right:5px; border:none; background:#f00;
-                        color:#fff; border-radius:50%; width:20px; height:20px; cursor:pointer;
-                    ">×</button>
-                </div>
-            `);
-
-            // 닫기 버튼 클릭 시 오버레이 닫기
-            $(`#${overlayId} .closeBtn`).on('click', function () {
-                customOverlay.setMap(null);
-                activeOverlay = null;
-            });
+            // 닫기 버튼 이벤트 바인딩 (DOM 반영 이후 실행)
+            setTimeout(() => {
+                document.querySelector('.customOverlay .closeBtn')?.addEventListener('click', () => {
+                    customOverlay.setMap(null);
+                    activeOverlay = null;
+                });
+            }, 0);
         });
     }
 });
 </script>
-
