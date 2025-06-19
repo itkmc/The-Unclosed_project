@@ -1,0 +1,110 @@
+import requests
+
+API_KEY = "itkang0219"
+BASE_URL = "https://www.law.go.kr/DRF"
+
+def get_statute_json(law_name):
+    params = {
+        "OC": API_KEY,
+        "target": "law",
+        "LM": law_name,
+        "type": "JSON"
+    }
+    res = requests.get(BASE_URL + "/lawService.do", params=params)
+    return res.json().get("법령", {})  # "법령" 하위에 조문 포함
+
+def parse_statutes(raw_json):
+    result = []
+    for item in raw_json.get("조문", {}).get("조문단위", []):
+        if item.get("조문여부") != "조문":
+            continue
+
+        조문번호 = item.get("조문내용").split("(")[0].strip()
+        조문제목 = item.get("조문제목", "").strip()
+        항목 = []
+
+        if "항" in item:
+            if isinstance(item["항"], list):
+                # 리스트라면 각 항목의 '항내용'을 모아서
+                항목 = [항.get("항내용", "").strip() for 항 in item["항"]]
+            elif isinstance(item["항"], dict):
+                # dict 하나라면 '항내용'만 추출
+                항목 = [item["항"].get("항내용", "").strip()]
+            else:
+                # 그 외 (문자열 등) 처리
+                항목 = [str(item["항"]).strip()]
+        else:
+            항목 = [item.get("조문내용", "").strip()]
+
+        result.append({
+            "조문번호": 조문번호,
+            "조문제목": 조문제목,
+            "항목": 항목
+        })
+    return result
+
+def get_case_list(keyword="살인"):
+    url = f"{BASE_URL}/lawSearch.do"
+    params = {
+        "OC": API_KEY,
+        "target": "prec",
+        "type": "JSON",
+        "query": keyword
+    }
+    res = requests.get(url, params=params)
+    data = res.json()
+
+    # PrecSearch 키 내에 판례 리스트가 있음
+    items = data.get("PrecSearch", {}).get("prec", [])
+
+    print(f"\n✅ '{keyword}' 관련 판례 목록 (상위 5개):")
+    for i, item in enumerate(items[:5], 1):
+        print(f"{i}. 사건명: {item.get('사건명')} ({item.get('사건번호')})")
+        print(f"   → 판례일련번호: {item.get('판례일련번호')}")
+
+    return items
+
+def get_case_detail(prec_seq):
+    url = f"{BASE_URL}/lawService.do"
+    params = {
+        "OC": API_KEY,
+        "target": "prec",
+        "type": "JSON",
+        "ID": prec_seq
+    }
+    res = requests.get(url, params=params)
+    data = res.json()
+
+    # PrecService 키로 판례 본문 정보 가져오기
+    prec_data = data.get("PrecService", {})
+
+    case_detail = {
+        "사건명": prec_data.get("사건명"),
+        "판시사항": prec_data.get("판시사항"),
+        "판결요지": prec_data.get("판결요지"),
+        "판결내용요지": prec_data.get("판결내용요지"),
+        "참조조문": prec_data.get("참조조문"),
+        "참조판례": prec_data.get("참조판례")
+    }
+
+    return case_detail
+
+if __name__ == "__main__":
+    # 법령 본문 조회 및 출력
+    raw_statute_json = get_statute_json("형법")
+    statutes = parse_statutes(raw_statute_json)
+    print(f"조문 데이터 개수: {len(statutes)}")
+    for s in statutes[:3]:
+        print(s)
+
+    # 판례 목록 조회
+    cases = get_case_list("살인")
+
+    # 첫 번째 판례 상세 조회 및 출력
+    if cases:
+        detail = get_case_detail(cases[0]['판례일련번호'])
+        print("\n첫 번째 판례 상세 내용:")
+        for k, v in detail.items():
+            print(f"{k}: {v}")
+
+

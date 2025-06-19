@@ -1,0 +1,147 @@
+def build_legal_reference_text(case_keyword, legal_data):
+    def keyword_match(text):
+        return case_keyword.lower() in text.lower() if text else False
+
+    related_statutes = []
+    for statute in legal_data.get("statutes", []):
+        if keyword_match(statute.get("조문제목", "")) or any(keyword_match(h) for h in statute.get("항목", [])):
+            first_항 = statute.get("항목", ["내용 없음"])[0]
+            related_statutes.append(f"{statute['조문제목']}\n  - {first_항.strip()}")
+
+    related_precedents = []
+    for precedent in legal_data.get("precedents", []):
+        if keyword_match(precedent.get("판시사항", "")) or keyword_match(precedent.get("판결요지", "")):
+            related_precedents.append(f"{precedent['사건명']}\n  - {precedent['판결요지'].strip()}")
+
+    # ✅ 기본값 제거하고 '없음' 표시
+    if not related_statutes:
+        related_statutes.append("관련 법률 조항이 없습니다.")
+    if not related_precedents:
+        related_precedents.append("관련 판례가 없습니다.")
+
+    return f"""[법률 근거]
+{chr(10).join(related_statutes)}
+
+[판례 근거]
+{chr(10).join(related_precedents)}"""
+
+def build_case_summary(caseData):
+    # caseData가 dict가 아니면 빈 문자열 반환
+    if not isinstance(caseData, dict):
+        return ""
+
+    parts = []
+
+    # 사건명
+    if caseData.get("caseName"):
+        parts.append(f"사건명: {caseData['caseName']}")
+
+    # 기간
+    period = caseData.get("period")
+    if period and period.get("start") and period.get("end"):
+        parts.append(f"기간: {period['start']}부터 {period['end']}까지")
+
+    # 피해자 정보
+    victim = caseData.get("victim")
+    if victim:
+        v_name = victim.get("name", "피해자")
+        v_details = victim.get("details", "")
+        parts.append(f"피해자: {v_name} - {v_details}")
+
+    # 범죄 상세
+    crime_details = caseData.get("crimeDetails")
+    if crime_details:
+        comms = crime_details.get("communications", {})
+        phone_calls = comms.get("phoneCalls", "")
+        notes = comms.get("notes", "")
+        parts.append(f"범죄 상세: {phone_calls} / {notes}")
+
+        perp_traits = crime_details.get("perpetratorTraits")
+        if perp_traits:
+            parts.append(f"가해자 특징: {perp_traits}")
+
+    # 조사 내용
+    investigation = caseData.get("investigation")
+    if investigation:
+        composite_sketch = investigation.get("compositeSketch", "")
+        evidence = investigation.get("evidenceUsed", [])
+        evidence_str = ", ".join(evidence) if evidence else ""
+        parts.append(f"조사 내용: 몽타주 - {composite_sketch}, 증거 - {evidence_str}")
+
+    # 결과
+    outcome = caseData.get("outcome")
+    if outcome:
+        status = outcome.get("status", "")
+        description = outcome.get("description", "")
+        parts.append(f"사건 결과: {status} - {description}")
+
+    # 사회적 의의
+    social_sig = caseData.get("socialSignificance")
+    if social_sig:
+        desc = social_sig.get("description", "")
+        coverage = social_sig.get("modernCoverage", "")
+        parts.append(f"사회적 의의: {desc}. 최근 보도: {coverage}")
+
+    return "\n".join(parts)
+
+def build_prompt_for_role(case_keyword, role, legal_data, user_question, caseData, phase=None):
+    case_summary = build_case_summary(caseData)
+    legal_ref_text = build_legal_reference_text(case_keyword, legal_data)
+
+    prompt = f"""
+당신은 법정에서 오직 '{role}' 역할만 수행합니다.  
+다른 역할(판사, 검사, 변호사 중 하나라도)로 말하지 마세요.  
+답변은 반드시 '{role}:' 으로 시작해야 하며, 다른 역할 발언을 포함하지 마십시오.
+
+[사건 요약]
+{case_summary or '요약 정보 없음'}
+
+[법률 및 판례 근거]
+{legal_ref_text}
+
+[사용자 질문]
+"{user_question}"
+"""
+
+    # 증인신문 단계에서 증인이 없으면 가상 증인 생성 유도
+    if phase == "증인신문" and role == "증인":
+        # 실제 증인 존재 여부 판단 로직 예시 (없으면 True로 가정)
+        def actual_witness_exists(case):
+            # caseData 내 증인 정보 있으면 True, 없으면 False 리턴하는 예시
+            witnesses = case.get("witnesses", [])
+            return bool(witnesses)
+        
+        if not actual_witness_exists(caseData):
+            prompt += """
+※ 현재 실존 증인이 없습니다.  
+따라서 사건 정황과 사용자 질문에 맞는 가상의 증인 역할을 생성해 답변하십시오.  
+예를 들어 증인의 이름, 직업, 목격 내용, 증언의 신빙성 등을 포함하여 사실적으로 답변하세요.
+"""
+
+    prompt += f"""
+{role}의 입장에서 논리적이고 법률적으로 답변하십시오.
+"""
+    return prompt
+
+def format_statutes_for_prompt(statutes=None):
+    if statutes is None or len(statutes) == 0:
+        return "관련 법률 조문 정보가 없습니다."
+    
+    lines = []
+    # 조문마다 "조문번호: 내용" 형식으로 변환
+    for statute in statutes[:3]:  # 최대 5개만 출력
+        num = statute.get("조문번호", "번호없음")
+        content = statute.get("내용", "내용없음")
+        lines.append(f"{num}: {content}")
+    return "\n".join(lines)
+
+def format_precedents_for_prompt(precedents=None):
+    if precedents is None or len(precedents) == 0:
+        return "관련 판례 정보가 없습니다."
+    
+    lines = []
+    for precedent in precedents[:3]:  # 최대 3개만 출력
+        title = precedent.get("사건명", "제목없음")
+        summary = precedent.get("요지", "요지없음")
+        lines.append(f"{title}: {summary}")
+    return "\n".join(lines)

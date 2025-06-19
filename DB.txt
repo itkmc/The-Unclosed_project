@@ -14,12 +14,6 @@ CREATE TABLE coldCase (
     , investigation TEXT NOT NULL
 );
 
-CREATE TABLE pdfFile (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(100),  -- 예: 형법, 형사소송법
-    content LONGTEXT 
-);
-
 INSERT INTO coldCase (
     mainTitle
     , occDate
@@ -51,7 +45,4 @@ INSERT INTO coldCase (
          , ('신정동 연쇄폭행 살인사건', '엽기토끼 살인사건', '2005-11-20', '친정 집에 간다고 나간 후 연락두절', '2005-11-21', '로마아파트 근처 한 빌라의 주차장 쓰레기 무단 투기장에서 발견', '이모 씨(42세)', '첫번째 피해자와 유사한 방식으로 유기되었으며, 경부압박 질식사로 사망한 걸로 확인됨 \n 전문가로 따르면 두 사건 모두 동일범의 소행일 가능성이 높다고 추측함')
          , ('신정동 연쇄폭행 살인사건', '엽기토끼 살인사건', '2006-05-31', '택시를 타고 가던 중 납치', '2006-05-31', '범인이 화장실에 간 틈을 타서 탈출함', '박모 씨(생존한 피해자)', '이 사건 끝으로 유사한 사건이 더 이상 발생하지 않았음 \n 생존한 박모 씨는 용의자의 생김새를 아래와 같이 말했음 \n 키 약 175cm \n 마르고 단단한 체구 \n 2024년 기준 50대 초반으로 추정 \n 문신처럼 짙은 눈썹이 특징');
                          
-     
-
 SELECT * FROM coldCase;
-SELECT * FROM pdfFile;
