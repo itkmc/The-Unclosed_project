@@ -18,13 +18,3 @@
 <title>${pageTitle }</title>
 </head>
 <body>
-
-	<div class="container h-20 flex mx-auto text-3xl">
-		<div><a class="flex h-full px-3 items-center" href="/">로고</a></div>
-		<div class="grow"></div>
-		<ul class="flex">
-			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../case/main">CASE</a></li>
-			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../case/coldCaseMap">CASEMAP</a></li>
-			<li class="hover:underline underline-offset-8"><a class="flex h-full px-3 items-center" href="../ai/mockTrial">MOCKTRIAL</a></li>
-		</ul>
-	</div>

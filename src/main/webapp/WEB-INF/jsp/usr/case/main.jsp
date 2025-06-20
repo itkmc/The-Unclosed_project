@@ -112,6 +112,8 @@
 		</li>
 	</ul>
 </section>
+<div><button class="btn btn-neutral btn-outline btn-xs" onclick="history.back();">뒤로가기</button></div>
 
 <script src="/resource/timeline.js"></script>
+
 <%@ include file="/WEB-INF/jsp/common/footer.jsp" %>

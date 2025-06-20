@@ -1,17 +1,26 @@
 @charset "UTF-8";
 
-@font-face {
-    font-family: 'D2Coding';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_three@1.0/D2Coding.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
+/* ✅ 폰트: IBM Plex Sans KR 적용 */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&display=swap');
+
+html, body {
+    font-family: 'IBM Plex Sans KR', sans-serif;
+    background-color: #0f172a; /* Tailwind bg-gray-900 */
+    color: #f1f5f9; /* Tailwind text-gray-100 */
+    margin: 0;
+    padding: 0;
 }
 
-html * {
-	font-family: 'D2Coding';
-}
-
+/* 테이블 공통 스타일 */
 .table-box th, .table-box td {
-	padding: 10px;
-	text-align: center;
+    padding: 10px;
+    text-align: center;
+}
+
+/* 링크 기본 스타일 */
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
 }
