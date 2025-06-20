@@ -54,8 +54,11 @@ def get_case_list(keyword="살인"):
     res = requests.get(url, params=params)
     data = res.json()
 
-    # PrecSearch 키 내에 판례 리스트가 있음
     items = data.get("PrecSearch", {}).get("prec", [])
+
+    # prec가 리스트인지 확인. 아니면 리스트로 감싸기
+    if not isinstance(items, list):
+        items = [items] if items else []
 
     print(f"\n✅ '{keyword}' 관련 판례 목록 (상위 5개):")
     for i, item in enumerate(items[:5], 1):
@@ -73,10 +76,18 @@ def get_case_detail(prec_seq):
         "ID": prec_seq
     }
     res = requests.get(url, params=params)
-    data = res.json()
 
-    # PrecService 키로 판례 본문 정보 가져오기
-    prec_data = data.get("PrecService", {})
+    try:
+        data = res.json()
+    except Exception as e:
+        print(f"[오류] JSON 파싱 실패: {e}")
+        return None
+
+    prec_data = data.get("PrecService")
+    if not prec_data or not isinstance(prec_data, dict):
+        # 데이터 없거나 형식 이상하면 None 반환
+        print(f"[경고] PrecService 데이터 없음 또는 형식 이상: {prec_data}")
+        return None
 
     case_detail = {
         "사건명": prec_data.get("사건명"),

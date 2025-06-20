@@ -4,7 +4,7 @@ import google.generativeai as genai
 from google.genai.types import Content, Part
 import importlib.util
 from api_test import get_statute_json ,parse_statutes, get_case_list, get_case_detail
-from promt_respose import build_prompt_for_role, build_case_summary, format_statutes_for_prompt, format_precedents_for_prompt
+from promt_respose import build_prompt_for_role, build_case_summary, format_statutes_for_prompt, format_precedents_for_prompt, infer_target_role_from_question
 
 # Google GenAI 클라이언트 초기화 (Gemini API 사용)
 client = genai.configure(api_key="")
@@ -13,6 +13,7 @@ client = genai.configure(api_key="")
 model = None
 client = None
 conversations = {}
+_cached_legal_data_map = {}
 
 def ensure_model():
     global model, client
@@ -141,7 +142,6 @@ def infer_laws_and_keywords_from_case(case):
 def update_phase_based_on_question(question, current_phase):
     q = question.strip()
 
-    # 각 키워드에 따라 다음 단계로 전환
     if "재판 시작" in q or "개시" in q or "시작" in q:
         return "서론"
     if "공소" in q or "검사" in q:
@@ -150,8 +150,8 @@ def update_phase_based_on_question(question, current_phase):
         return "변론요지"
     if "증인" in q and ("시작" in q or "신문" in q):
         return "증인신문"
-    if "반대신문" in q or "신문해주세요" in q:
-        return "신문"
+    if ("반대신문" in q or "신문해주세요" in q) and "증인" not in q:
+        return "반대신문"
     if "최종 의견" in q or "최종의견" in q:
         return "최종의견요청"
     if "최종 변론" in q or "마무리" in q:
@@ -159,7 +159,9 @@ def update_phase_based_on_question(question, current_phase):
     if "판결" in q or "선고" in q:
         return "판결선고"
 
-    # 기본적으로 이전 단계 유지
+    if any(keyword in q for keyword in ["계속", "진행", "다음"]):
+        return current_phase
+
     return current_phase
 
 # # ✅ 자동 추론 기반으로 조문 및 판례 불러오기
@@ -285,9 +287,12 @@ def load_legal_knowledge(caseData=None, max_precedents=5):
             cid = case["판례일련번호"]
             if cid not in seen_case_ids:
                 detail = get_case_detail(cid)
-                if detail and detail.get("판결요지", "").strip():
-                    legal_data["precedents"].append(detail)
-                    seen_case_ids.add(cid)
+                print("detail type:", type(detail), "detail:", detail)
+                if detail and isinstance(detail, dict):
+                    판결요지 = detail.get("판결요지", "")
+                    if 판결요지 and 판결요지.strip():
+                        legal_data["precedents"].append(detail)
+                        seen_case_ids.add(cid)
             if len(legal_data["precedents"]) >= max_precedents:
                 break
         if len(legal_data["precedents"]) >= max_precedents:
@@ -306,23 +311,26 @@ def advance_phase(current_phase, phase_list=PHASE_FLOW):
         return current_phase
 
 def generate_gemini_response(prompt: str) -> str:
-    """
-    주어진 프롬프트로 Gemini API에 메시지 전송 후 응답을 받는 함수
-    """
-    ensure_model()  # 모델과 클라이언트 초기화 확인
+    ensure_model()
 
     if client is None:
         raise RuntimeError("Gemini 클라이언트가 초기화되지 않았습니다.")
 
     try:
         response = client.send_message(prompt)
-        if hasattr(response, "text"):
+
+        # 응답 구조가 여러 후보(candidates)로 오는 경우 대비
+        if hasattr(response, "text") and response.text:
             return response.text.strip()
+
         elif hasattr(response, "candidates") and response.candidates:
-            # candidates 중 첫번째 응답 텍스트 반환
-            return response.candidates[0].content.parts[0].text.strip()
+            return "\n".join(
+                part.text for part in response.candidates[0].content.parts if hasattr(part, "text")
+            ).strip()
+
         else:
             return "[AI 응답을 생성할 수 없습니다]"
+
     except Exception as e:
         print("Gemini 응답 오류:", e)
         return "[Gemini 호출 중 오류 발생]"
@@ -330,12 +338,7 @@ def generate_gemini_response(prompt: str) -> str:
 def generate_guide_and_examples_with_ai(user_role, caseData, phase, conversation, legal_data):
     prompt = f"""
 당신은 '{user_role}' 역할을 맡고 있으며, 현재 재판 단계는 [{phase}]입니다.
-현재 단계는 '[서론]' 단계입니다. 따라서 질문과 답변 예시는 서론 단계에서 적절한 것들로 작성하세요. 예를 들어, 사건 개요 설명, 주요 쟁점 제기, 수사 진행 상황 등에 맞춰 작성합니다.
-
-- {user_role}으로서 할 수 있는 가이드 메시지 1~2개 (질문 및 각각 답변 예시 포함)
-- 실제 사건에 기반한, 역할에 적합한 예시 질문 3개
-
-(검사는 유죄 입증에 초점을 맞춘 질문, 변호사는 무죄 혹은 감형에 대한 방어적 질문 위주로 작성)
+현재 단계에 맞는 가이드 메시지 1~2개 (질문 및 답변 예시 포함)와 실제 사건에 기반한 역할 적합 예시 질문 3개를 작성하세요.
 
 사건 개요:
 {build_case_summary(caseData)}
@@ -364,7 +367,7 @@ def generate_guide_and_examples_with_ai(user_role, caseData, phase, conversation
         result = client.send_message(prompt)
         text = result.text.strip()
 
-        print("[DEBUG] AI 응답:", repr(text))  # 디버깅용 출력
+        print("[DEBUG] AI 응답:", repr(text))
 
         lines = text.splitlines()
         guide_lines = []
@@ -375,26 +378,26 @@ def generate_guide_and_examples_with_ai(user_role, caseData, phase, conversation
 
         for line in lines:
             line = line.strip()
-            if line.startswith("가이드 메시지:"):
+            if line.lower().startswith("가이드 메시지"):
                 parsing_guide = True
                 parsing_examples = False
                 continue
-            elif line.startswith("예시 질문:"):
+            elif line.lower().startswith("예시 질문"):
                 parsing_examples = True
                 parsing_guide = False
                 continue
 
             if parsing_guide:
-                # 빈 줄도 가이드 메시지에 포함 가능
                 guide_lines.append(line)
             elif parsing_examples:
                 if line.startswith("-"):
                     examples.append(line[1:].strip())
                 else:
-                    # 예시 질문 구간 끝
                     parsing_examples = False
 
         guide = "\n".join(guide_lines).strip()
+        if not guide:
+            print("[⚠️경고] 가이드 메시지 파싱 실패. 전체 응답 출력:\n", text)
 
         return guide, examples
 
@@ -492,6 +495,16 @@ def start_trial():
 
 _cached_legal_data = None
 
+# def infer_target_role_from_question(question: str) -> str:
+#     q = question.strip()
+#     if any(keyword in q for keyword in ["검사", "공소", "유죄", "입증", "신문", "증인"]):
+#         return "검사"
+#     if any(keyword in q for keyword in ["변호", "변호인", "무죄", "방어", "증거 부족"]):
+#         return "변호사"
+#     if any(keyword in q for keyword in ["판사", "재판부", "진행", "시작", "심리"]):
+#         return "판사"
+#     return None
+
 @app.route("/ask-ai", methods=["POST"])
 def ask_ai():
     data = request.get_json()
@@ -500,21 +513,10 @@ def ask_ai():
     user_role = data.get("userRole")
     case_name = data.get("caseName")
 
-    # 🔍 역할 추론 함수
-    def infer_target_role_from_question(question: str) -> str:
-        q = question.strip()
-        if "검사" in q:
-            return "검사"
-        if "변호" in q or "변호인" in q:
-            return "변호사"
-        if "판사" in q or "재판부" in q:
-            return "판사"
-        return None  # fallback to user_role
-
     if not all([session_id, question, user_role, case_name]):
         return jsonify({"error": "필수 파라미터 누락"}), 400
 
-    # 세션 불러오기 또는 생성
+    # 세션 초기화 또는 로드
     session_data = conversations.get(session_id)
     if not session_data:
         conversations[session_id] = {
@@ -529,54 +531,80 @@ def ask_ai():
     if not caseData:
         return jsonify({"error": "해당 사건 정보를 찾을 수 없습니다."}), 404
 
-    # 기존 값 가져오기
     current_phase = session_data.get("phase", "서론")
 
-    # ✅ 단계 업데이트
+    # 단계 업데이트
     new_phase = update_phase_based_on_question(question, current_phase)
     session_data["phase"] = new_phase
+
+    # 대화 기록 추가
     session_data["conversation"].append(f"{user_role}: {question}")
 
-    # 🔥 역할 추론 (핵심 수정)
+    # 역할 추론
     inferred = infer_target_role_from_question(question)
     target_role = inferred or data.get("targetRole") or user_role
 
     try:
-        global _cached_legal_data
-        if _cached_legal_data is None:
-            _cached_legal_data = load_legal_knowledge(caseData)
-        legal_data = _cached_legal_data
+        global _cached_legal_data_map
+        if case_name not in _cached_legal_data_map:
+            _cached_legal_data_map[case_name] = load_legal_knowledge(caseData)
+        legal_data = _cached_legal_data_map[case_name]
 
-        case_keyword = case_name
+        # 프롬프트 생성
+        prompt = build_prompt_for_role(case_name, target_role, legal_data, question, caseData, phase=new_phase)
+        print(f"=== Prompt for {target_role} ===\n{prompt[:800]}")
 
-        # 🎯 역할 기반 프롬프트 생성
-        prompt = build_prompt_for_role(case_keyword, target_role, legal_data, question, caseData)
-
-        print(f"=== Prompt for {target_role} ===")
-        print(prompt[:800])
-
+        # 검사 질문 또는 기타 역할 발언 생성
         ai_response = generate_gemini_response(prompt)
-
-        print("=== AI Response ===")
-        print(ai_response[:800])
+        print("=== AI Response ===\n", ai_response[:800])
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         return jsonify({"error": "AI 응답 생성 중 오류가 발생했습니다."}), 500
 
-    # 🔍 응답 필터: target_role로 시작하는 줄만 추출
-    response_lines = [line for line in ai_response.splitlines() if line.strip().startswith(f"{target_role}:")]
-    if not response_lines:
-        print(f"[경고] AI 응답에서 '{target_role}:' 역할 발언을 찾을 수 없음. 전체 응답 반환")
-        filtered_response = ai_response.strip()
-    else:
-        filtered_response = "\n".join(response_lines).strip()
+    # target_role 발언 필터링
+    lines = ai_response.strip().splitlines()
+    start_index = None
+    for idx, line in enumerate(lines):
+        if line.strip().startswith(f"{target_role}:"):
+            start_index = idx
+            break
 
-    # 🎯 예시 질문 + 가이드 메시지
+    if start_index is not None:
+        filtered_response = "\n".join(lines[start_index:]).strip()
+    else:
+        print(f"[⚠️경고] AI 응답에서 '{target_role}:' 역할 발언을 찾을 수 없음. 전체 응답 반환")
+        filtered_response = ai_response.strip()
+
+    # ✅ 증인 자동 응답 생성 (검사 + 증인신문 단계일 때만)
+    witness_response = ""
+    if user_role == "검사" and new_phase == "증인신문":
+        prosecutor_question = filtered_response
+
+        witness_prompt = f"""
+당신은 법과학 분석 및 범죄수사 관련 전문가인 '증인'입니다.
+검사로부터 다음과 같은 질문을 받았습니다:
+
+"{prosecutor_question}"
+
+전문가로서 해당 질문에 대해 신중하고 논리적으로 답변해 주세요.
+"""
+        try:
+            witness_response_raw = generate_gemini_response(witness_prompt)
+            witness_lines = witness_response_raw.strip().splitlines()
+            witness_start = next((i for i, l in enumerate(witness_lines) if l.strip().startswith("증인:")), None)
+            if witness_start is not None:
+                witness_response = "\n".join(witness_lines[witness_start:]).strip()
+            else:
+                witness_response = witness_response_raw.strip()
+        except Exception as e:
+            print("[❌ 증인 응답 생성 실패]", e)
+
+    # 가이드 메시지 및 예시 질문 생성
     try:
         guide_message, example_questions = generate_guide_and_examples_with_ai(
-            user_role, caseData, session_data["phase"], session_data["conversation"], legal_data
+            user_role, caseData, new_phase, session_data["conversation"], legal_data
         )
     except Exception as e:
         import traceback
@@ -584,12 +612,14 @@ def ask_ai():
         guide_message = ""
         example_questions = []
 
+    # 최종 응답
     return jsonify({
-        "answer": filtered_response,
+        "answer": filtered_response,           # 검사 발언
+        "witnessAnswer": witness_response,     # 자동 생성된 증인 응답
         "guideMessage": guide_message,
         "exampleQuestions": example_questions,
-        "nextPhase": current_phase,    # ← 이미 있음
-        "currentPhase": current_phase  # ← 새로 추가
+        "nextPhase": new_phase,
+        "currentPhase": new_phase
     })
 
 if __name__ == '__main__':

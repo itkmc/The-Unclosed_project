@@ -16,7 +16,19 @@ $(document).ready(function() {
     function addMessage(sender, text, isUser, alignRight = false) {
         const chat = $('#chat');
         const messageDiv = $('<div>').addClass('message');
-        const htmlText = (isUser ? `나: \${text}` : `\${sender}: \${text}`).replace(/\n/g, '<br>');
+
+        // 이미 text가 "검사: ~" 같이 sender가 붙어있으면 중복 안 붙임
+        let displayText = text;
+        const prefix = sender + ":";
+        if (!isUser && text.startsWith(prefix)) {
+            displayText = text;
+        } else if (!isUser) {
+            displayText = `\${sender}: \${text}`;
+        } else {
+            displayText = `나: \${text}`;
+        }
+
+        const htmlText = displayText.replace(/\n/g, '<br>');
 
         if (isUser || alignRight) {
             messageDiv.css({
@@ -81,27 +93,21 @@ $(document).ready(function() {
             success: function(data) {
                 isTrialStarted = true;
 
-                // 1. 판사 및 역할 발언 출력
                 if (data.answer) {
-                    const lines = data.answer.split('\n').filter(line => line.trim() !== '');
-                    lines.forEach(line => {
-                        const idx = line.indexOf(':');
-                        if (idx !== -1) {
-                            const aiRole = line.substring(0, idx).trim();
-                            const aiText = line.substring(idx + 1).trim();
-                            addMessage(aiRole, aiText, false);
-                        } else {
-                            addMessage('AI', line.trim(), false);
-                        }
-                    });
+                    const idx = data.answer.indexOf(':');
+                    if (idx !== -1) {
+                        const aiRole = data.answer.substring(0, idx).trim();
+                        const aiText = data.answer.substring(idx + 1).trim();
+                        addMessage(aiRole, aiText, false);
+                    } else {
+                        addMessage('AI', data.answer.trim(), false);
+                    }
                 }
 
-                // 2. 사건 요약 출력
                 if (data.caseSummary) {
-                    addMessage('시스템', `📄 사건 요약:\n\${data.caseSummary}`, false);
+                    addMessage('시스템', `📄 사건 요약:\n${data.caseSummary}`, false);
                 }
 
-                // 3. 가이드 박스 출력
                 const guideHtml = data.guideMessage
                     ? `<div class="guide-message">💡 \${data.guideMessage.replace(/\n/g, "<br>")}</div>`
                     : `<div class="guide-message">💡 가이드 메시지가 없습니다.</div>`;
@@ -115,17 +121,14 @@ $(document).ready(function() {
                     </ul>
                 `);
 
-             	// 4-1. 현재 단계 출력
                 if (data.currentPhase) {
-                    addMessage("시스템", `🧭 현재 단계: ${data.currentPhase}`, false);
+                    addMessage("시스템", `🧭 현재 단계: \${data.currentPhase}`, false);
                 }
 
-                // 4-2. 다음 단계 출력 (단, '서론' 단계는 출력하지 않음)
                 if (data.nextPhase && data.nextPhase !== '서론') {
-                    addMessage('시스템', `📌 다음 단계: ${data.nextPhase}`, false);
+                    addMessage('시스템', `📌 다음 단계: \${data.nextPhase}`, false);
                 }
 
-                // 5. 질문이 있다면 바로 전송
                 if (question) {
                     addMessage('나', question, true);
                     sendAskAi(caseName, role, question);
@@ -137,35 +140,41 @@ $(document).ready(function() {
         });
     }
 
-    // AI 역할 추론 함수
     function getAiActualRole(aiRoleRaw, userRole, aiText) {
-    const lowered = aiRoleRaw.toLowerCase();
-    const text = aiText.toLowerCase();
+        const lowered = aiRoleRaw.toLowerCase();
+        const text = aiText.toLowerCase();
 
-    // 1. 직접적으로 역할이 명시된 경우 우선
-    if (lowered.includes('판사')) return '판사';
-    if (lowered.includes('검사')) return '검사';
-    if (lowered.includes('변호사')) return '변호사';
-    if (lowered.includes('시스템')) return '시스템';
+        if (lowered.includes('판사')) return '판사';
+        if (lowered.includes('검사')) return '검사';
+        if (lowered.includes('변호사')) return '변호사';
+        if (lowered.includes('시스템')) return '시스템';
 
-    // 2. 텍스트 내용 기반 추론 (정교하게 조정)
-    if (text.includes('공소사실') || text.includes('기소') || text.includes('유죄') || text.includes('엄벌')) {
-        return '검사';
-    }
+        if (text.includes('공소사실') || text.includes('기소') || text.includes('유죄') || text.includes('엄벌')) {
+            return '검사';
+        }
 
-    if (text.includes('무죄') || text.includes('알리바이') || text.includes('변론') || text.includes('방어') || text.includes('정황') || text.includes('의문을 제기')) {
-        return '변호사';
-    }
+        if (text.includes('무죄') || text.includes('알리바이') || text.includes('변론') || text.includes('방어') || text.includes('정황') || text.includes('의문을 제기')) {
+            return '변호사';
+        }
 
-    if (text.includes('재판부는') || text.includes('공정하게') || text.includes('절차') || text.includes('판단') || text.includes('중립')) {
+        if (text.includes('재판부는') || text.includes('공정하게') || text.includes('절차') || text.includes('판단') || text.includes('중립')) {
+            return '판사';
+        }
+
+        if (userRole === '검사') return '변호사';
+        if (userRole === '변호사') return '검사';
         return '판사';
     }
 
-    // 3. fallback: 사용자 역할 반대로
-    if (userRole === '검사') return '변호사';
-    if (userRole === '변호사') return '검사';
-    return '판사';
-}
+    function showQuestionButton(role, buttonText) {
+        const container = $("#question-button-container");
+        container.html(`<button id="role-question-btn">\${buttonText}</button>`);
+        $("#role-question-btn").off("click").on("click", () => {
+            const caseName = currentCaseName;
+            sendAskAi(caseName, role, `${role}의 질문을 입력하세요.`);
+            container.empty();
+        });
+    }
 
     function sendAskAi(caseName, role, question) {
         $.ajax({
@@ -176,65 +185,47 @@ $(document).ready(function() {
             data: JSON.stringify({
                 sessionId: sessionId,
                 question: question,
-                userRole: role,
-                caseName: caseName
+                caseName: caseName,
+                userRole: role
             }),
             success: function(data) {
-                if (data.answer) {
-                    const lines = data.answer.split('\n').filter(line => line.trim() !== '');
-                    lines.forEach(line => {
-                        const idx = line.indexOf(':');
-                        if (idx !== -1) {
-                            const aiRoleRaw = line.substring(0, idx).trim();
-                            const aiText = line.substring(idx + 1).trim();
-                            const finalRole = getAiActualRole(aiRoleRaw, role, aiText);
-                            addMessage(finalRole, aiText, false);
-                        } else {
-                            const fallbackText = line.trim();
-                            if (fallbackText) {
-                                const inferredRole = getAiActualRole('AI', role, fallbackText);
-                                addMessage(inferredRole, fallbackText, false);
-                            }
-                        }
-                    });
+                const idx = data.answer.indexOf(':');
+                if (idx !== -1) {
+                    const aiRole = data.answer.substring(0, idx).trim();
+                    const aiText = data.answer.substring(idx + 1).trim();
+                    addMessage(aiRole, aiText, false);
+                } else {
+                    addMessage(role, data.answer.trim(), false);
                 }
 
-                let systemMessage = "";
-
-                if (data.guideMessage) {
-                    systemMessage += `💡 가이드: ${data.guideMessage}\n`;
-                }
-                if (data.nextPhase) {
-                    systemMessage += `📌 다음 단계: ${data.nextPhase}\n`;
-                }
-                if (data.exampleQuestions && data.exampleQuestions.length > 0) {
-                    systemMessage += `🧭 예시 질문:\n`;
-                    data.exampleQuestions.forEach(q => {
-                        systemMessage += `- ${q}\n`;
-                    });
-                }
-                if (systemMessage.trim() !== "") {
-                    addMessage("시스템", systemMessage.trim(), false);
-                }
-
-                // 가이드 박스 업데이트
-                if (data.guideMessage || (data.exampleQuestions && data.exampleQuestions.length > 0)) {
-                    let guideText = "";
-                    if (data.guideMessage) {
-                        guideText += "👉 " + data.guideMessage.replace(/\n/g, "<br>") + "<br><br>";
+                // ✅ 증인 자동 응답이 있다면 추가로 출력
+                if (data.witnessAnswer) {
+                    const witnessIdx = data.witnessAnswer.indexOf(':');
+                    if (witnessIdx !== -1) {
+                        const witnessRole = data.witnessAnswer.substring(0, witnessIdx).trim();
+                        const witnessText = data.witnessAnswer.substring(witnessIdx + 1).trim();
+                        addMessage(witnessRole, witnessText, false); // ex) 증인: ~
+                    } else {
+                        addMessage("증인", data.witnessAnswer.trim(), false);
                     }
-                    if (data.exampleQuestions && data.exampleQuestions.length > 0) {
-                        guideText += "💡 예시 질문:<br>";
-                        data.exampleQuestions.forEach(q => {
-                            guideText += `- ${q}<br>`;
-                        });
+                }
+
+                // 검사 질문 이후 증인 직접 호출 (기존 로직 유지)
+                if (role === "검사" && data.currentPhase === "증인신문" && data.answer.includes("증인 신문을 시작")) {
+                    setTimeout(() => {
+                        sendAskAi(caseName, "증인", "검사님의 질문에 대해 증언해 주세요.");
+                    }, 1000);
+                    return;
+                }
+
+                if (role === "증인" && data.currentPhase === "반대신문") {
+                    if (data.answer.includes("더 질문하실 내용 있나요")) {
+                        showQuestionButton("변호사", "변호인 반대신문 질문하기");
                     }
-                    $('#guide-box').html(guideText).show();
                 }
             },
-            error: function(xhr, status, error) {
-                alert('AI 응답 중 오류가 발생했습니다: ' + error);
-                console.error(xhr, status, error);
+            error: function() {
+                alert('⚠️ AI 응답 처리 중 오류 발생');
             }
         });
     }
@@ -259,6 +250,7 @@ $(document).ready(function() {
 
     <!-- 오른쪽 채팅 영역 -->
     <div id="chat"></div>
+    <div id="question-button-container"></div>
 </div>
 
 <!-- 입력 영역 -->

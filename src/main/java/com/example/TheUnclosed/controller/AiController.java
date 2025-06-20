@@ -25,6 +25,11 @@ public class AiController {
 	
 	@PostMapping("/usr/ai/ask")
 	public ResponseEntity<Map<String, String>> askAi(@RequestBody Map<String, String> requestBody){
+		
+		 // 🔍 1. 받은 JSON 출력
+	    System.out.println("🔥 받은 requestBody: " + requestBody);
+		
+	    String sessionId = requestBody.get("sessionId");
 	    String question = requestBody.get("question");
 	    String caseName = requestBody.get("caseName");
 	    String userRole = requestBody.get("userRole");
@@ -35,11 +40,19 @@ public class AiController {
 	    headers.setContentType(MediaType.APPLICATION_JSON);
 
 	    Map<String, String> aiRequest = new HashMap<>();
-	    aiRequest.put("sessionId", requestBody.get("sessionId"));  // sessionId도 보내기
+	    aiRequest.put("sessionId", sessionId);  // sessionId도 보내기
 	    aiRequest.put("question", question);
 	    aiRequest.put("caseName", caseName);
 	    aiRequest.put("userRole", userRole);
-
+	    
+	    // 🔍 3. 누락 확인
+	    if (sessionId == null || question == null || caseName == null || userRole == null) {
+	        System.out.println("❌ 필수 파라미터 누락! sessionId=" + sessionId + ", question=" + question + ", caseName=" + caseName + ", userRole=" + userRole);
+	        Map<String, String> error = new HashMap<>();
+	        error.put("answer", "필수 파라미터 누락");
+	        return ResponseEntity.badRequest().body(error);
+	    }
+	    
 	    HttpEntity<Map<String, String>> entity = new HttpEntity<>(aiRequest, headers);
 
 	    try {
