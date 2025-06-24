@@ -23,9 +23,9 @@ $(document).ready(function() {
         if (!isUser && text.startsWith(prefix)) {
             displayText = text;
         } else if (!isUser) {
-            displayText = `\${sender}: \${text}`;
+            displayText = `\${sender}: \${text}`;  // 수정된 부분 (백틱 내 \ 제거)
         } else {
-            displayText = `나: \${text}`;
+            displayText = `나: \${text}`;  // 수정된 부분 (백틱 내 \ 제거)
         }
 
         const htmlText = displayText.replace(/\n/g, '<br>');
@@ -44,6 +44,8 @@ $(document).ready(function() {
                 messageDiv.addClass('prosecutor');
             } else if (sender === '변호사') {
                 messageDiv.addClass('lawyer');
+            } else if (sender === '증인') {
+                messageDiv.addClass('witness'); 
             } else {
                 messageDiv.css('background-color', '#f8d7da');
             }
@@ -75,6 +77,14 @@ $(document).ready(function() {
             }
             addMessage('나', question, true);
             sendAskAi(caseName, role, question);
+        }
+    });
+
+    // 엔터키 눌러서 질문 전송하기 (Shift+Enter는 줄바꿈)
+    $('#question').on('keypress', function(event) {
+        if (event.which === 13 && !event.shiftKey) {
+            event.preventDefault(); // 줄바꿈 방지
+            $('#sendButton').click(); // 전송 버튼 클릭과 동일하게 처리
         }
     });
 
@@ -189,37 +199,54 @@ $(document).ready(function() {
                 userRole: role
             }),
             success: function(data) {
-                const idx = data.answer.indexOf(':');
-                if (idx !== -1) {
-                    const aiRole = data.answer.substring(0, idx).trim();
-                    const aiText = data.answer.substring(idx + 1).trim();
-                    addMessage(aiRole, aiText, false);
+                if (data.answer) {
+                    const idx = data.answer.indexOf(':');
+                    if (idx !== -1) {
+                        let aiRole = data.answer.substring(0, idx).trim();
+                        const aiText = data.answer.substring(idx + 1).trim();
+
+                        // 판사 역할 사용자가 증인신문 지시 → AI가 검사/변호사 질문 후 증인 답변 시
+//                         if (role === '판사' && (aiRole === '검사' || aiRole === '변호사') && aiText.toLowerCase().includes('증인')) {
+//                             aiRole = '증인';
+//                         }
+                        
+                        if (
+                        	    role === '판사' &&
+                        	    (aiRole === '검사' || aiRole === '변호사') &&
+                        	    aiText.toLowerCase().startsWith('증인:') // 또는 정확히 증인 답변임을 판단할 더 엄격한 조건
+                        	) {
+                        	    aiRole = '증인';
+                        	}
+
+                        addMessage(aiRole, aiText, false);
+                    } else {
+                        addMessage(role, data.answer.trim(), false);
+                    }
                 } else {
-                    addMessage(role, data.answer.trim(), false);
+                    addMessage("시스템", "AI 응답이 없습니다.", false);
                 }
 
-                // ✅ 증인 자동 응답이 있다면 추가로 출력
-                if (data.witnessAnswer) {
+                // 자동 생성된 증인 응답 처리 (data.witnessAnswer)
+                if (data.witnessAnswer && data.witnessAnswer.trim() !== "") {
                     const witnessIdx = data.witnessAnswer.indexOf(':');
                     if (witnessIdx !== -1) {
-                        const witnessRole = data.witnessAnswer.substring(0, witnessIdx).trim();
+                        let witnessRole = data.witnessAnswer.substring(0, witnessIdx).trim();
                         const witnessText = data.witnessAnswer.substring(witnessIdx + 1).trim();
-                        addMessage(witnessRole, witnessText, false); // ex) 증인: ~
+
+                        // 강제로 '증인' 역할명 지정 (색상, 스타일 구분용)
+                        if (witnessRole !== '증인') {
+                            witnessRole = '증인';
+                        }
+
+                        addMessage(witnessRole, witnessText, false);
                     } else {
                         addMessage("증인", data.witnessAnswer.trim(), false);
                     }
                 }
 
-                // 검사 질문 이후 증인 직접 호출 (기존 로직 유지)
-                if (role === "검사" && data.currentPhase === "증인신문" && data.answer.includes("증인 신문을 시작")) {
-                    setTimeout(() => {
-                        sendAskAi(caseName, "증인", "검사님의 질문에 대해 증언해 주세요.");
-                    }, 1000);
-                    return;
-                }
-
+                // 반대신문 버튼 자동 노출 예시
                 if (role === "증인" && data.currentPhase === "반대신문") {
-                    if (data.answer.includes("더 질문하실 내용 있나요")) {
+                    if (data.answer.includes("더 질문하실 내용") || data.answer.includes("반대신문")) {
                         showQuestionButton("변호사", "변호인 반대신문 질문하기");
                     }
                 }

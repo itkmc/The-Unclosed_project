@@ -117,5 +117,3 @@ if __name__ == "__main__":
         print("\n첫 번째 판례 상세 내용:")
         for k, v in detail.items():
             print(f"{k}: {v}")
-
-

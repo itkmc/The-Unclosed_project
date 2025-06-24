@@ -47,7 +47,6 @@ public class AiController {
 	    
 	    // 🔍 3. 누락 확인
 	    if (sessionId == null || question == null || caseName == null || userRole == null) {
-	        System.out.println("❌ 필수 파라미터 누락! sessionId=" + sessionId + ", question=" + question + ", caseName=" + caseName + ", userRole=" + userRole);
 	        Map<String, String> error = new HashMap<>();
 	        error.put("answer", "필수 파라미터 누락");
 	        return ResponseEntity.badRequest().body(error);

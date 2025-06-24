@@ -118,6 +118,14 @@ body {
   margin-left: auto;
 }
 
+/* 증인 메시지 스타일 */
+.witness {
+  border-left: 6px solid #8e44ad; /* 보라색 */
+  background-color: rgba(142, 68, 173, 0.1);
+  color: #6f42c1;
+  margin-right: auto;
+}
+
 /* 시스템 메시지 */
 .message.system {
   background-color: rgba(255, 255, 255, 0.1);
@@ -166,6 +174,11 @@ body {
   border: none;
   font-size: 14px;
   outline: none;
+}
+
+#caseSelect > option {
+	background: rgba(0, 0, 0, 0.6);
+  	color: #fff;
 }
 
 /* ✨ 버튼 유지 */

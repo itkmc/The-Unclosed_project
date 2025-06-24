@@ -159,3 +159,33 @@ def format_precedents_for_prompt(precedents=None):
         summary = precedent.get("요지", "요지없음")
         lines.append(f"{title}: {summary}")
     return "\n".join(lines)
+
+def determine_speaker_for_phase(user_role: str, phase: str, strict: bool = True) -> str:
+    """
+    재판 단계에 따라 누가 발언해야 할지를 결정합니다.
+    
+    strict=True: 고정된 역할 흐름 (교과서적 재판 흐름)
+    strict=False: 사용자 중심 유연 흐름
+    """
+
+    if strict:
+        # ✅ 고정 재판 흐름
+        if phase == "서론":
+            return "판사"
+        elif phase == "공소사실진술":
+            return "검사"
+        elif phase == "변론요지진술":
+            return "변호사"
+        elif phase == "증인신문":
+            return "검사"
+        elif phase == "반대신문":
+            return "변호사"
+        elif phase == "최종변론":
+            return "검사"  # 또는 마지막 발언자 기준으로 판단 가능
+        elif phase == "판결":
+            return "판사"
+        else:
+            return user_role  # fallback
+    else:
+        # ✅ 유연 흐름: 사용자의 현재 역할 유지
+        return user_role
