@@ -142,26 +142,43 @@ def infer_laws_and_keywords_from_case(case):
 def update_phase_based_on_question(question, current_phase):
     q = question.strip()
 
-    if "재판 시작" in q or "개시" in q or "시작" in q:
+    # 재판 시작 관련
+    if any(kw in q for kw in ["재판 시작", "개시", "시작"]):
         return "서론"
-    if "공소" in q or "검사" in q:
+
+    # 증인 신문 관련 - 다양한 표현 대응
+    if "증인" in q and any(kw in q for kw in ["시작", "신문", "진행", "하세요", "해주세요"]):
+        return "증인신문"
+
+    # 반대신문 관련 - "증인 반대신문"도 포함시키기 위해 조건 변경
+    if "반대신문" in q:
+        return "반대신문"
+
+    # 공소 사실 진술 관련 - "공소"는 포함하되, "증인"이 없을 때로 제한 (증인신문 혼동 방지)
+    if "공소" in q or ("검사" in q and "증인" not in q):
         return "공소사실"
+
+    # 변론 요지 진술 관련
     if "변호사" in q or "변론 요지" in q:
         return "변론요지"
-    if "증인" in q and ("시작" in q or "신문" in q):
-        return "증인신문"
-    if ("반대신문" in q or "신문해주세요" in q) and "증인" not in q:
-        return "반대신문"
-    if "최종 의견" in q or "최종의견" in q:
+
+    # 최종 의견 요청 관련
+    if any(kw in q for kw in ["최종 의견", "최종의견"]):
         return "최종의견요청"
-    if "최종 변론" in q or "마무리" in q:
+
+    # 최종 변론 관련
+    if any(kw in q for kw in ["최종 변론", "마무리"]):
         return "최종변론"
-    if "판결" in q or "선고" in q:
+
+    # 판결 선고 관련
+    if any(kw in q for kw in ["판결", "선고"]):
         return "판결선고"
 
-    if any(keyword in q for keyword in ["계속", "진행", "다음"]):
+    # 계속, 진행, 다음 등은 현재 단계 유지
+    if any(kw in q for kw in ["계속", "진행", "다음"]):
         return current_phase
 
+    # 기본적으로 현재 단계 유지
     return current_phase
 
 def load_legal_knowledge(caseData=None, max_precedents=5):
@@ -449,18 +466,11 @@ def ask_ai():
     legal_data = _cached_legal_data_map[case_name]
 
     # 현재 상황에서 AI가 어떤 역할을 말해야 하는지 추론
-    target_role = infer_target_role_from_question(question)
+    target_role = infer_target_role_from_question(question, new_phase, user_role)
 
+    # 추론 실패 시, phase 기준으로 fallback 처리
     if not target_role:
-        # phase 기준 기본 설정
-        if new_phase == "공소사실진술":
-            target_role = "검사"
-        elif new_phase == "변론요지진술":
-            target_role = "변호사"
-        elif new_phase == "증인신문":
-            target_role = "검사"
-        else:
-            target_role = "판사"
+        target_role = determine_speaker_for_phase(user_role, new_phase, strict=True)
 
     # 프롬프트 생성 및 AI 응답
     prompt = build_prompt_for_role(case_name, target_role, legal_data, question, caseData, phase=new_phase)
@@ -483,7 +493,7 @@ def ask_ai():
         witness_prompt = f"""당신은 법정 증인입니다.
 검사로부터 다음 질문을 받았습니다:
 
-\"\"\"{filtered_response}\"\"\"
+'''{filtered_response}'''
 
 사실에 기반한 진솔하고 구체적인 답변을 작성하세요.
 답변은 반드시 '증인:'으로 시작해야 합니다.
